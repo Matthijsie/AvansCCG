@@ -81,6 +81,7 @@ public class ClientApplication extends Application {
         this.canvas.setOnMouseDragged(e -> onMouseDragged(e));
         this.canvas.setOnMouseReleased(e -> onMouseReleased(e));
 
+        //send message if enter is pressed
         this.chatInput.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER && !this.chatInput.getText().trim().equals("")) {
                 this.client.writeUTF(this.chatInput.getText());
@@ -89,6 +90,7 @@ public class ClientApplication extends Application {
             }
         });
 
+        //opens the play screen when the login button is pressed
         loginButton.setOnAction(event -> {
             if (!loginField.getText().trim().equals("")) {
                 this.client = new Client("localhost", 10000, this);
@@ -128,6 +130,7 @@ public class ClientApplication extends Application {
 
     }
 
+    //adds new label to the chatBox
     public void messageReceived(String message){
         Label label = new Label(message);
         label.setWrapText(true);

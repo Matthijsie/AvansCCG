@@ -41,6 +41,7 @@ public class Client {
             this.name = name;
             this.out.writeUTF(this.name);
 
+            //Handling incoming messages
             new Thread ( () -> {
                 while ( true ) {
                     try {
@@ -61,16 +62,12 @@ public class Client {
         }
     }
 
-    public String getName(){
-        return this.name;
-    }
-
+    //sends message to the server
     public void writeUTF(String text){
         try {
             if (!text.trim().equals("")) {
                 this.out.writeUTF(text);
             }
-            System.out.println("message sent!");
         } catch (IOException e) {
             e.printStackTrace();
         }

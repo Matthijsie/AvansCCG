@@ -24,6 +24,7 @@ public class Session implements Runnable {
         }
     }
 
+    //sends a message to all clients in the session
     public void sendToAllClients(String text) {
         this.player1.writeUTF(text);
         if (this.player2 != null) {

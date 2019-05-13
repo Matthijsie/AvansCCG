@@ -15,7 +15,6 @@ public class Server {
     private ArrayList<Thread> sessions;
     private ArrayList<ServerClient> clients;
     private int playerTypeTracker;
-    private ServerClient waitingClient;
 
     public Server ( int port ) {
         this.port = port;
@@ -50,7 +49,7 @@ public class Server {
                         ServerClient client = new ServerClient(socket, session, this.playerTypeTracker);
 
                         this.clients.add(client);
-                        if (this.playerTypeTracker == 2){   //starts the session if there are enough players
+                        if (this.playerTypeTracker == 2){                        //starts the session if there are enough players
                             session.addPlayer2(client);
                             Thread game = new Thread(session);
 
@@ -58,7 +57,7 @@ public class Server {
                             this.sessions.add(game);
                             System.out.println("Total sessions:" + this.sessions.size());
 
-                        }else {     //adds one player to the session if there arent enough player yet
+                        }else {                                                   //adds one player to the session if there arent enough player yet
                             session.addPlayer1(client);
                         }
 
