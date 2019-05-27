@@ -2,10 +2,9 @@ package client;
 
 
 import javafx.application.Platform;
+import server.game.Game;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 
 public class Client {
@@ -17,6 +16,8 @@ public class Client {
     private int playerNumber;
     private DataInputStream in;
     private DataOutputStream out;
+    private ObjectInputStream inO;
+    private ObjectOutputStream outO;
     private ClientApplication gui;
 
     public Client(String host, int port, ClientApplication gui){
@@ -32,6 +33,9 @@ public class Client {
             this.in = new DataInputStream(this.socket.getInputStream());
             this.out = new DataOutputStream(this.socket.getOutputStream());
 
+            this.inO = new ObjectInputStream(this.socket.getInputStream());
+            this.outO = new ObjectOutputStream(this.socket.getOutputStream());
+
             this.playerNumber = this.in.readInt();
             System.out.println("you are number " + this.playerNumber);
 
@@ -41,6 +45,9 @@ public class Client {
             this.name = name;
             this.out.writeUTF(this.name);
 
+            this.outO.writeObject(new Game("TestGame2"));
+            this.outO.flush();
+
             //Handling incoming messages
             new Thread ( () -> {
                 while ( true ) {
@@ -48,12 +55,20 @@ public class Client {
                         String message = this.in.readUTF();
                         System.out.println("Recieved Message: " + message);
 
-                        Platform.runLater( () -> {
-                            this.gui.messageReceived(message);
-                        });
+                        Platform.runLater( () -> this.gui.messageReceived(message));
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                }
+            }).start();
+
+            //Handling incoming game Objects
+            new Thread( () -> {
+                try {
+                    Game game = (Game) this.inO.readObject();
+                    this.gui.setGame(game);
+                } catch (IOException | ClassNotFoundException e) {
+                    e.printStackTrace();
                 }
             }).start();
 
@@ -68,6 +83,14 @@ public class Client {
             if (!text.trim().equals("")) {
                 this.out.writeUTF(text);
             }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void disconnect(){
+        try {
+            this.socket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

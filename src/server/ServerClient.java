@@ -1,8 +1,8 @@
 package server;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import server.game.Game;
+
+import java.io.*;
 import java.net.Socket;
 
 public class ServerClient implements Runnable {
@@ -11,6 +11,8 @@ public class ServerClient implements Runnable {
     private Session session;
     private DataInputStream in;
     private DataOutputStream out;
+    private ObjectInputStream inO;
+    private ObjectOutputStream outO;
     private String name;
     private int playerNumber;
 
@@ -28,12 +30,24 @@ public class ServerClient implements Runnable {
         }
     }
 
+    public void writeObject(Game game){
+        try {
+            this.outO.writeObject(game);
+            this.outO.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     @Override
     public void run() {
         try {
             this.in = new DataInputStream(this.socket.getInputStream());
             this.out = new DataOutputStream(this.socket.getOutputStream());
+
+            this.outO = new ObjectOutputStream(this.socket.getOutputStream());
+            this.inO = new ObjectInputStream(this.socket.getInputStream());
 
             this.out.writeInt(this.playerNumber);
 
@@ -42,10 +56,28 @@ public class ServerClient implements Runnable {
             this.name = in.readUTF();
             System.out.println("#### " + this.name + " joined the game!");
 
-            while (true){
-                String message = in.readUTF();
-                System.out.println("client send message: " + message);
-                this.session.sendToAllClients("(" + this.name + ") " + message);
+            try {
+                Game game = (Game) this.inO.readObject();
+                System.out.println("Succesfully recieved game object: " + game.getName());
+
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+
+            new Thread(()->{
+                try {
+                    Game game = (Game) this.inO.readObject();
+
+                    this.session.setPlayerGames(game, this.playerNumber);
+                } catch (IOException | ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }).start();
+
+            while (true) {
+                    String message = this.in.readUTF();
+                    System.out.println("client send message: " + message);
+                    this.session.sendToAllClients("(" + this.name + ") " + message);
             }
         } catch (IOException e) {
             e.printStackTrace();

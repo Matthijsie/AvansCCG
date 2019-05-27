@@ -16,6 +16,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.jfree.fx.FXGraphics2D;
 import org.jfree.fx.ResizableCanvas;
+import server.game.Game;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
@@ -28,6 +29,7 @@ public class ClientApplication extends Application {
     private VBox chatBox;
     private ScrollPane scrollPane;
     private TextField chatInput;
+    private Game game;
 
     public static void main(String[] args) {
         launch(ClientApplication.class);
@@ -106,6 +108,9 @@ public class ClientApplication extends Application {
         stage.show();
         draw(g2d);
 
+        stage.setOnCloseRequest(event ->{
+            this.client.disconnect();
+        });
     }
 
     public void draw(FXGraphics2D g2d){
@@ -142,5 +147,9 @@ public class ClientApplication extends Application {
         this.chatInput.clear();
         this.scrollPane.setVvalue(1.0);
 
+    }
+
+    public void setGame(Game game){
+        this.game = game;
     }
 }
