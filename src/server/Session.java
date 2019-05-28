@@ -3,6 +3,7 @@ package server;
 import server.game.Game;
 import server.game.MyPlayer;
 import server.game.Opponent;
+import server.game.cardcontainers.Deck;
 import server.game.cards.Card;
 
 import java.util.ArrayList;
@@ -78,8 +79,11 @@ public class Session implements Runnable {
 
     private void setUpGame(){
         //sets the information players know from themselves
-        MyPlayer firstPlayerView = new MyPlayer();
-        MyPlayer secondPlayerView = new MyPlayer();
+        Deck deckPlayer1 = new Deck();
+        Deck deckPlayer2 = new Deck();
+
+        MyPlayer firstPlayerView = new MyPlayer(deckPlayer1);
+        MyPlayer secondPlayerView = new MyPlayer(deckPlayer2);
 
         //sets the information the players know from their opponent
         Opponent firstPlayersOpponent = new Opponent(0, 0, 0, new LinkedList<>(), 0, 0);
