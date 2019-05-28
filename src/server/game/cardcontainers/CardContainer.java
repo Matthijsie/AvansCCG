@@ -4,11 +4,10 @@ import server.game.cards.Card;
 
 import java.io.Serializable;
 import java.util.LinkedList;
-import java.util.List;
 
 public abstract class CardContainer implements Serializable {
 
-    protected List<Card> cards;
+    protected LinkedList<Card> cards;
 
     public CardContainer(){
         this.cards = new LinkedList<>();
@@ -18,7 +17,7 @@ public abstract class CardContainer implements Serializable {
         this.cards = cards;
     }
 
-    public List<Card> getCards(){
+    public LinkedList<Card> getCards(){
         return this.cards;
     }
 

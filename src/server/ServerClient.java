@@ -1,7 +1,5 @@
 package server;
 
-import server.game.Game;
-
 import java.io.*;
 import java.net.Socket;
 
@@ -62,16 +60,7 @@ public class ServerClient implements Runnable {
 
                         Object object = this.inO.readObject();
 
-                        if (object.getClass().equals(Game.class)) {
-                            Game game = (Game) object;
-
-                            this.session.setPlayerGames(game, this.playerNumber);
-
-                        }else if (object.getClass().equals(String.class)){
-                            String message = (String) object;
-                            handleMessage(message);
-
-                        }
+                        this.session.objectReceived(object, this);
 
 
                     } catch (IOException | ClassNotFoundException e) {
@@ -96,8 +85,11 @@ public class ServerClient implements Runnable {
         }
     }
 
-    private void handleMessage(String message){
-        System.out.println("client send message: " + message);
-        this.session.sendToAllClients("(" + this.name + ") " + message);
+    public int getPlayerNumber(){
+        return this.playerNumber;
+    }
+
+    public String getName(){
+        return this.name;
     }
 }

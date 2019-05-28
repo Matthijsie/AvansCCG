@@ -8,9 +8,8 @@ import server.game.cards.Card;
 import server.game.cards.Minion;
 
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
-import java.util.List;
 
 public class Session implements Runnable {
 
@@ -29,28 +28,24 @@ public class Session implements Runnable {
         while (true) {
             if (this.player2 != null && !this.gameHasStarted){
                setUpGame();
+            }else if (this.gameHasStarted){
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
-
-
         }
     }
 
-    public void sendToAllClients(Object object){
+    private void sendToAllClients(Object object){
         this.player1.writeObject(object);
         if (this.player2 != null){
             this.player2.writeObject(object);
         }
     }
 
-    //sends a message to all clients in the session
-//    public void sendToAllClients(String text) {
-//        this.player1.writeUTF(text);
-//        if (this.player2 != null) {
-//            this.player2.writeUTF(text);
-//        }
-//    }
-
-    public void updateAllClientGames(){
+    private void updateAllClientGames(){
         this.player1.writeObject(this.player1Game);
         this.player2.writeObject(this.player2Game);
     }
@@ -67,40 +62,32 @@ public class Session implements Runnable {
         this.secondPlayer.start();
     }
 
-    public void setPlayerGames(Game game, int playerNumber){
-        try {
-            if (playerNumber == 1) {
-                this.player1Game = game;
-            } else if (playerNumber == 2) {
-                this.player2Game = game;
-            }
-        }catch (Exception e){
-            System.out.println("Error: could not find player");
-        }
-    }
-
     private void setUpGame(){
         //=============setting information players know themselves===========================
         //player 1
         LinkedList<Card> cardsPlayer1 = new LinkedList<>();
         for (int i = 0; i < 30; i++){
-            cardsPlayer1.add(new Minion(0,0,0,"Dummy", ""));
+            cardsPlayer1.add(new Minion(0,0,0,"DummyPlayer1", ""));
         }
         Deck deckPlayer1 = new Deck(cardsPlayer1);
+        Collections.shuffle(deckPlayer1.getCards());
         MyPlayer firstPlayerView = new MyPlayer(deckPlayer1, 30, 0, Color.red);
+        firstPlayerView.drawFromDeckToHand(3);
 
         //player 2
         LinkedList<Card> cardsPlayer2 = new LinkedList<>();
         for (int i = 0; i < 30; i++){
-            cardsPlayer2.add(new Minion(0,0,0,"Dummy", ""));
+            cardsPlayer2.add(new Minion(0,0,0,"DummyPlayer2", ""));
         }
 
         Deck deckPlayer2 = new Deck(cardsPlayer2);
+        Collections.shuffle(deckPlayer2.getCards());
         MyPlayer secondPlayerView = new MyPlayer(deckPlayer2, 30, 0, Color.blue);
+        secondPlayerView.drawFromDeckToHand(4);
 
         //===============setting information players know from one another=====================
         //player 1
-        Opponent firstPlayersOpponent = new Opponent(0,
+        Opponent firstPlayersOpponent = new Opponent(secondPlayerView.getHandSize(),
                 0,
                 secondPlayerView.getDeckSize(),
                 new LinkedList<>(),
@@ -111,7 +98,7 @@ public class Session implements Runnable {
         this.player1Game = new Game(firstPlayerView, firstPlayersOpponent);
 
         //player 2
-        Opponent secondPlayersOpponent = new Opponent(0,
+        Opponent secondPlayersOpponent = new Opponent(firstPlayerView.getHandSize(),
                 0,
                 firstPlayerView.getDeckSize(),
                 new LinkedList<>(),
@@ -128,4 +115,16 @@ public class Session implements Runnable {
         this.gameHasStarted = true;
     }
 
+    public void objectReceived(Object object, ServerClient sender){
+        if (object.getClass().equals(Game.class)) {
+            Game game = (Game) object;
+
+            updateAllClientGames();
+
+        }else if (object.getClass().equals(String.class)){
+            String message = (String) object;
+            System.out.println("client send message: " + message);
+            sendToAllClients("(" + sender.getName() + ") " + message);
+        }
+    }
 }

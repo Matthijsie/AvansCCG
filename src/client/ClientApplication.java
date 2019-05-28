@@ -9,7 +9,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
@@ -17,11 +16,12 @@ import javafx.stage.Stage;
 import org.jfree.fx.FXGraphics2D;
 import org.jfree.fx.ResizableCanvas;
 import server.game.Game;
+import server.game.cards.Card;
 
 import java.awt.*;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-
 
 public class ClientApplication extends Application {
 
@@ -32,7 +32,6 @@ public class ClientApplication extends Application {
     private TextField chatInput;
     private Game game;
     private Rectangle2D endTurnButton;
-    private double previousCanvasWidth, previousCanvasHeigth;
 
     public static void main(String[] args) {
         launch(ClientApplication.class);
@@ -43,7 +42,8 @@ public class ClientApplication extends Application {
         //============Login screen================
         BorderPane firstPane = new BorderPane();
         VBox loginBox = new VBox();
-        TextField loginField = new TextField("Enter a name");
+        TextField loginField = new TextField();
+        loginField.setPromptText("Enter a name");
         Button loginButton = new Button("Log in");
         firstPane.setCenter(loginBox);
         loginBox.getChildren().addAll(loginField, loginButton);
@@ -56,8 +56,6 @@ public class ClientApplication extends Application {
         mainPane.setCenter(this.canvas);
         this.endTurnButton = new Rectangle2D.Double(canvas.getWidth()*0.95, canvas.getHeight()*0.45, canvas.getWidth()*0.05, canvas.getHeight()*0.1);
 
-        previousCanvasWidth = canvas.getWidth();
-        previousCanvasHeigth = canvas.getHeight();
         //chat stuff
         BorderPane chatContainer = new BorderPane();
         this.chatBox = new VBox();
@@ -104,7 +102,7 @@ public class ClientApplication extends Application {
                 this.client.connect(loginField.getText());
                 this.chatInput.setPromptText("Chat as " + loginField.getText());
                 stage.setScene(new Scene(mainPane, 720, 720));
-
+                stage.setFullScreen(true);
             }
         });
 
@@ -121,21 +119,18 @@ public class ClientApplication extends Application {
         g2d.fill(screen);
 
         g2d.setColor(Color.black);
+        this.endTurnButton = new Rectangle2D.Double(canvas.getWidth()*0.90, canvas.getHeight()*0.47, canvas.getWidth()*0.10, canvas.getHeight()*0.06);
         g2d.draw(this.endTurnButton);
 
         if (this.game != null){
             drawPlayerPortraits(g2d);
             drawDecks(g2d);
+            drawHands(g2d);
         }
     }
 
     public void update(double deltaTime){
-        if (this.previousCanvasWidth != this.canvas.getWidth() || this.previousCanvasHeigth != this.canvas.getHeight()){
-            this.previousCanvasHeigth = this.canvas.getHeight();
-            this.previousCanvasWidth = this.canvas.getWidth();
 
-            this.endTurnButton = new Rectangle2D.Double(canvas.getWidth()*0.90, canvas.getHeight()*0.47, canvas.getWidth()*0.10, canvas.getHeight()*0.06);
-        }
     }
 
     private void onMousePressed(MouseEvent e){
@@ -162,7 +157,6 @@ public class ClientApplication extends Application {
         label.setPadding(new Insets(1,10,1,10));
 
         this.chatBox.getChildren().add(label);
-//        this.client.writeStringObject(this.chatInput.getText());
         this.chatInput.clear();
         this.scrollPane.setVvalue(1.0);
 
@@ -174,7 +168,7 @@ public class ClientApplication extends Application {
 
     private void drawPlayerPortraits(FXGraphics2D g2d){
         Rectangle2D myPlayerPortrait = new Rectangle2D.Double(this.canvas.getWidth()*0.45,
-                this.canvas.getHeight()*0.8,
+                this.canvas.getHeight()*0.75,
                 this.canvas.getWidth()*0.1,
                 this.canvas.getHeight()*0.2);
 
@@ -182,22 +176,39 @@ public class ClientApplication extends Application {
         g2d.fill(myPlayerPortrait);
 
         Rectangle2D opponentPortrait = new Rectangle2D.Double(this.canvas.getWidth()*0.45,
-                0,
+                this.canvas.getHeight()*0.05,
                 this.canvas.getWidth()*0.1,
                 this.canvas.getHeight()*0.2);
 
         g2d.setColor(this.game.getOpponent().getColor());
         g2d.fill(opponentPortrait);
 
-        g2d.setColor(Color.black);
-        g2d.drawString(String.valueOf(this.game.getMyPlayer().getHealth()), (int)myPlayerPortrait.getCenterX(), (int)myPlayerPortrait.getCenterY());
-        g2d.draw(myPlayerPortrait);
+        Ellipse2D healthContainer1 = new Ellipse2D.Double(myPlayerPortrait.getX() + myPlayerPortrait.getWidth()*0.3,
+                myPlayerPortrait.getY() - myPlayerPortrait.getHeight()*0.2,
+                myPlayerPortrait.getWidth()*0.4,
+                myPlayerPortrait.getWidth()*0.4);
+        g2d.setColor(Color.white);
+        g2d.fill(healthContainer1);
 
-        g2d.drawString(String.valueOf(this.game.getOpponent().getHealth()), (int)opponentPortrait.getCenterX(), (int)opponentPortrait.getCenterY());
+        Ellipse2D healthContainer2 = new Ellipse2D.Double(opponentPortrait.getX() + opponentPortrait.getWidth()*0.3,
+                opponentPortrait.getY() + opponentPortrait.getHeight()*0.8,
+                opponentPortrait.getWidth()*0.4,
+                opponentPortrait.getWidth()*0.4);
+        g2d.fill(healthContainer2);
+
+        g2d.setColor(Color.black);
+        g2d.drawString(String.valueOf(this.game.getMyPlayer().getHealth()), (int)healthContainer1.getCenterX(), (int)healthContainer1.getCenterY());
+        g2d.draw(myPlayerPortrait);
+        g2d.draw(healthContainer1);
+
+        g2d.drawString(String.valueOf(this.game.getOpponent().getHealth()), (int)healthContainer2.getCenterX(), (int)healthContainer2.getCenterY());
         g2d.draw(opponentPortrait);
+        g2d.draw(healthContainer2);
     }
 
     private void drawDecks(FXGraphics2D g2d){
+
+        //drawing my deck
         Rectangle2D myDeck = new Rectangle2D.Double(this.canvas.getWidth()*0.8,
                 this.canvas.getHeight()*0.8,
                 this.canvas.getWidth()*0.1,
@@ -206,6 +217,7 @@ public class ClientApplication extends Application {
         g2d.setColor(Color.lightGray);
         g2d.fill(myDeck);
 
+        //drawing opponent deck
         Rectangle2D opponentDeck = new Rectangle2D.Double(this.canvas.getWidth()*0.8,
                 this.canvas.getHeight()*0.1,
                 this.canvas.getWidth()*0.1,
@@ -213,12 +225,26 @@ public class ClientApplication extends Application {
 
         g2d.fill(opponentDeck);
 
+        //draw method and adding numbers for the deck sizes
         g2d.setColor(Color.black);
         g2d.draw(myDeck);
         g2d.draw(opponentDeck);
 
         g2d.drawString(String.valueOf(this.game.getMyPlayer().getDeck().getCards().size()), (int)myDeck.getCenterX(), (int)myDeck.getCenterY());
-        g2d.drawString(String.valueOf(this.game.getMyPlayer().getDeck().getCards().size()), (int)opponentDeck.getCenterX(), (int)opponentDeck.getCenterY());
+        g2d.drawString(String.valueOf(this.game.getOpponent().getCardAmountInDeck()), (int)opponentDeck.getCenterX(), (int)opponentDeck.getCenterY());
 
+    }
+
+    private void drawHands(FXGraphics2D g2d){
+
+        //drawing my hand
+        int i = 0;
+        for (Card card : this.game.getMyPlayer().getHand().getCards()) {
+
+            Point2D cardPosition = new Point2D.Double(this.canvas.getWidth()*0.07*i, this.canvas.getHeight()*0.8);
+            card.drawInHand(g2d, this.canvas, cardPosition);
+
+            i++;
+        }
     }
 }
