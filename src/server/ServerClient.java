@@ -1,8 +1,8 @@
 package server;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import server.game.Game;
+
+import java.io.*;
 import java.net.Socket;
 
 public class ServerClient implements Runnable {
@@ -11,6 +11,8 @@ public class ServerClient implements Runnable {
     private Session session;
     private DataInputStream in;
     private DataOutputStream out;
+    private ObjectInputStream inO;
+    private ObjectOutputStream outO;
     private String name;
     private int playerNumber;
 
@@ -28,12 +30,24 @@ public class ServerClient implements Runnable {
         }
     }
 
+    public void writeObject(Object object){
+        try {
+            this.outO.writeObject(object);
+            this.outO.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     @Override
     public void run() {
         try {
             this.in = new DataInputStream(this.socket.getInputStream());
             this.out = new DataOutputStream(this.socket.getOutputStream());
+
+            this.outO = new ObjectOutputStream(this.socket.getOutputStream());
+            this.inO = new ObjectInputStream(this.socket.getInputStream());
 
             this.out.writeInt(this.playerNumber);
 
@@ -42,13 +56,48 @@ public class ServerClient implements Runnable {
             this.name = in.readUTF();
             System.out.println("#### " + this.name + " joined the game!");
 
-            while (true){
-                String message = in.readUTF();
-                System.out.println("client send message: " + message);
-                this.session.sendToAllClients("(" + this.name + ") " + message);
-            }
+            new Thread(()->{
+                while (true) {
+                    try {
+
+                        Object object = this.inO.readObject();
+
+                        if (object.getClass().equals(Game.class)) {
+                            Game game = (Game) object;
+
+                            this.session.setPlayerGames(game, this.playerNumber);
+
+                        }else if (object.getClass().equals(String.class)){
+                            String message = (String) object;
+                            handleMessage(message);
+
+                        }
+
+
+                    } catch (IOException | ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+
+//            new Thread(()->{
+//                while (true) {
+//                    try {
+//                        String message = this.in.readUTF();
+//                        handleMessage(message);
+//                    }catch (IOException e){
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }).start();
+
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void handleMessage(String message){
+        System.out.println("client send message: " + message);
+        this.session.sendToAllClients("(" + this.name + ") " + message);
     }
 }
