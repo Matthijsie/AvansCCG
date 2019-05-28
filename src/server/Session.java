@@ -5,7 +5,9 @@ import server.game.MyPlayer;
 import server.game.Opponent;
 import server.game.cardcontainers.Deck;
 import server.game.cards.Card;
+import server.game.cards.Minion;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -78,21 +80,51 @@ public class Session implements Runnable {
     }
 
     private void setUpGame(){
-        //sets the information players know from themselves
-        Deck deckPlayer1 = new Deck();
-        Deck deckPlayer2 = new Deck();
+        //=============setting information players know themselves===========================
+        //player 1
+        LinkedList<Card> cardsPlayer1 = new LinkedList<>();
+        for (int i = 0; i < 30; i++){
+            cardsPlayer1.add(new Minion(0,0,0,"Dummy", ""));
+        }
+        Deck deckPlayer1 = new Deck(cardsPlayer1);
+        MyPlayer firstPlayerView = new MyPlayer(deckPlayer1, 30, 0, Color.red);
 
-        MyPlayer firstPlayerView = new MyPlayer(deckPlayer1);
-        MyPlayer secondPlayerView = new MyPlayer(deckPlayer2);
+        //player 2
+        LinkedList<Card> cardsPlayer2 = new LinkedList<>();
+        for (int i = 0; i < 30; i++){
+            cardsPlayer2.add(new Minion(0,0,0,"Dummy", ""));
+        }
 
-        //sets the information the players know from their opponent
-        Opponent firstPlayersOpponent = new Opponent(0, 0, 0, new LinkedList<>(), 0, 0);
-        Opponent secondPlayersOpponent = new Opponent(0, 0, 0, new LinkedList<>(), 0, 0);
+        Deck deckPlayer2 = new Deck(cardsPlayer2);
+        MyPlayer secondPlayerView = new MyPlayer(deckPlayer2, 30, 0, Color.blue);
+
+        //===============setting information players know from one another=====================
+        //player 1
+        Opponent firstPlayersOpponent = new Opponent(0,
+                0,
+                secondPlayerView.getDeckSize(),
+                new LinkedList<>(),
+                secondPlayerView.getHealth(),
+                secondPlayerView.getMana(),
+                secondPlayerView.getPlayerColor());
 
         this.player1Game = new Game(firstPlayerView, firstPlayersOpponent);
-        this.player2Game = new Game(secondPlayerView, secondPlayersOpponent);
-        updateAllClientGames();
 
+        //player 2
+        Opponent secondPlayersOpponent = new Opponent(0,
+                0,
+                firstPlayerView.getDeckSize(),
+                new LinkedList<>(),
+                firstPlayerView.getHealth(),
+                firstPlayerView.getMana(),
+                firstPlayerView.getPlayerColor());
+
+        this.player2Game = new Game(secondPlayerView, secondPlayersOpponent);
+
+
+
+        //=================sending games to clients and starting game============================
+        updateAllClientGames();
         this.gameHasStarted = true;
     }
 

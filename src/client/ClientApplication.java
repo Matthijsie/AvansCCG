@@ -123,6 +123,10 @@ public class ClientApplication extends Application {
         g2d.setColor(Color.black);
         g2d.draw(this.endTurnButton);
 
+        if (this.game != null){
+            drawPlayerPortraits(g2d);
+            drawDecks(g2d);
+        }
     }
 
     public void update(double deltaTime){
@@ -166,5 +170,55 @@ public class ClientApplication extends Application {
 
     public void setGame(Game game){
         this.game = game;
+    }
+
+    private void drawPlayerPortraits(FXGraphics2D g2d){
+        Rectangle2D myPlayerPortrait = new Rectangle2D.Double(this.canvas.getWidth()*0.45,
+                this.canvas.getHeight()*0.8,
+                this.canvas.getWidth()*0.1,
+                this.canvas.getHeight()*0.2);
+
+        g2d.setColor(this.game.getMyPlayer().getPlayerColor());
+        g2d.fill(myPlayerPortrait);
+
+        Rectangle2D opponentPortrait = new Rectangle2D.Double(this.canvas.getWidth()*0.45,
+                0,
+                this.canvas.getWidth()*0.1,
+                this.canvas.getHeight()*0.2);
+
+        g2d.setColor(this.game.getOpponent().getColor());
+        g2d.fill(opponentPortrait);
+
+        g2d.setColor(Color.black);
+        g2d.drawString(String.valueOf(this.game.getMyPlayer().getHealth()), (int)myPlayerPortrait.getCenterX(), (int)myPlayerPortrait.getCenterY());
+        g2d.draw(myPlayerPortrait);
+
+        g2d.drawString(String.valueOf(this.game.getOpponent().getHealth()), (int)opponentPortrait.getCenterX(), (int)opponentPortrait.getCenterY());
+        g2d.draw(opponentPortrait);
+    }
+
+    private void drawDecks(FXGraphics2D g2d){
+        Rectangle2D myDeck = new Rectangle2D.Double(this.canvas.getWidth()*0.8,
+                this.canvas.getHeight()*0.8,
+                this.canvas.getWidth()*0.1,
+                this.canvas.getHeight()*0.1);
+
+        g2d.setColor(Color.lightGray);
+        g2d.fill(myDeck);
+
+        Rectangle2D opponentDeck = new Rectangle2D.Double(this.canvas.getWidth()*0.8,
+                this.canvas.getHeight()*0.1,
+                this.canvas.getWidth()*0.1,
+                this.canvas.getHeight()*0.1);
+
+        g2d.fill(opponentDeck);
+
+        g2d.setColor(Color.black);
+        g2d.draw(myDeck);
+        g2d.draw(opponentDeck);
+
+        g2d.drawString(String.valueOf(this.game.getMyPlayer().getDeck().getCards().size()), (int)myDeck.getCenterX(), (int)myDeck.getCenterY());
+        g2d.drawString(String.valueOf(this.game.getMyPlayer().getDeck().getCards().size()), (int)opponentDeck.getCenterX(), (int)opponentDeck.getCenterY());
+
     }
 }
