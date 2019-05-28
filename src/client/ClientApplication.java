@@ -19,6 +19,7 @@ import org.jfree.fx.ResizableCanvas;
 import server.game.Game;
 
 import java.awt.*;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 
@@ -30,6 +31,8 @@ public class ClientApplication extends Application {
     private ScrollPane scrollPane;
     private TextField chatInput;
     private Game game;
+    private Rectangle2D endTurnButton;
+    private double previousCanvasWidth, previousCanvasHeigth;
 
     public static void main(String[] args) {
         launch(ClientApplication.class);
@@ -51,7 +54,10 @@ public class ClientApplication extends Application {
         BorderPane mainPane = new BorderPane();
         this.canvas = new ResizableCanvas(g -> draw(g), mainPane);
         mainPane.setCenter(this.canvas);
+        this.endTurnButton = new Rectangle2D.Double(canvas.getWidth()*0.95, canvas.getHeight()*0.45, canvas.getWidth()*0.05, canvas.getHeight()*0.1);
 
+        previousCanvasWidth = canvas.getWidth();
+        previousCanvasHeigth = canvas.getHeight();
         //chat stuff
         BorderPane chatContainer = new BorderPane();
         this.chatBox = new VBox();
@@ -86,8 +92,7 @@ public class ClientApplication extends Application {
         //send message if enter is pressed
         this.chatInput.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER && !this.chatInput.getText().trim().equals("")) {
-                this.client.writeUTF(this.chatInput.getText());
-
+                this.client.writeObject(this.chatInput.getText());
                 this.chatInput.clear();
             }
         });
@@ -108,23 +113,33 @@ public class ClientApplication extends Application {
         stage.show();
         draw(g2d);
 
-        stage.setOnCloseRequest(event ->{
-            this.client.disconnect();
-        });
     }
 
     public void draw(FXGraphics2D g2d){
         Rectangle2D screen = new Rectangle2D.Double(0,0, this.canvas.getWidth(), this.canvas.getHeight());
         g2d.setColor(Color.white);
         g2d.fill(screen);
+
+        g2d.setColor(Color.black);
+        g2d.draw(this.endTurnButton);
+
     }
 
     public void update(double deltaTime){
+        if (this.previousCanvasWidth != this.canvas.getWidth() || this.previousCanvasHeigth != this.canvas.getHeight()){
+            this.previousCanvasHeigth = this.canvas.getHeight();
+            this.previousCanvasWidth = this.canvas.getWidth();
 
+            this.endTurnButton = new Rectangle2D.Double(canvas.getWidth()*0.90, canvas.getHeight()*0.47, canvas.getWidth()*0.10, canvas.getHeight()*0.06);
+        }
     }
 
     private void onMousePressed(MouseEvent e){
+        Point2D mousePosition = new Point2D.Double(e.getX(), e.getY());
 
+        if(this.endTurnButton.contains(mousePosition)){
+            System.out.println("pressed end turn button");
+        }
     }
 
     private void onMouseDragged(MouseEvent e){
@@ -143,7 +158,7 @@ public class ClientApplication extends Application {
         label.setPadding(new Insets(1,10,1,10));
 
         this.chatBox.getChildren().add(label);
-        this.client.writeUTF(this.chatInput.getText());
+//        this.client.writeStringObject(this.chatInput.getText());
         this.chatInput.clear();
         this.scrollPane.setVvalue(1.0);
 

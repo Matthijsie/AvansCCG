@@ -30,9 +30,9 @@ public class ServerClient implements Runnable {
         }
     }
 
-    public void writeObject(Game game){
+    public void writeObject(Object object){
         try {
-            this.outO.writeObject(game);
+            this.outO.writeObject(object);
             this.outO.flush();
         } catch (IOException e) {
             e.printStackTrace();
@@ -56,31 +56,48 @@ public class ServerClient implements Runnable {
             this.name = in.readUTF();
             System.out.println("#### " + this.name + " joined the game!");
 
-            try {
-                Game game = (Game) this.inO.readObject();
-                System.out.println("Succesfully recieved game object: " + game.getName());
-
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            }
-
             new Thread(()->{
-                try {
-                    Game game = (Game) this.inO.readObject();
+                while (true) {
+                    try {
 
-                    this.session.setPlayerGames(game, this.playerNumber);
-                } catch (IOException | ClassNotFoundException e) {
-                    e.printStackTrace();
+                        Object object = this.inO.readObject();
+
+                        if (object.getClass().equals(Game.class)) {
+                            Game game = (Game) object;
+
+                            this.session.setPlayerGames(game, this.playerNumber);
+
+                        }else if (object.getClass().equals(String.class)){
+                            String message = (String) object;
+                            handleMessage(message);
+
+                        }
+
+
+                    } catch (IOException | ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
                 }
             }).start();
 
-            while (true) {
-                    String message = this.in.readUTF();
-                    System.out.println("client send message: " + message);
-                    this.session.sendToAllClients("(" + this.name + ") " + message);
-            }
+//            new Thread(()->{
+//                while (true) {
+//                    try {
+//                        String message = this.in.readUTF();
+//                        handleMessage(message);
+//                    }catch (IOException e){
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }).start();
+
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void handleMessage(String message){
+        System.out.println("client send message: " + message);
+        this.session.sendToAllClients("(" + this.name + ") " + message);
     }
 }

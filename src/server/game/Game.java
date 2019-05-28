@@ -4,13 +4,19 @@ import java.io.Serializable;
 
 public class Game implements Serializable {
 
-    private String name;
+    private MyPlayer myPlayer;
+    private Opponent opponent;
 
-    public Game(String name){
-        this.name = name;
+    public Game(MyPlayer myPlayer, Opponent opponent){
+        this.myPlayer = myPlayer;
+        this.opponent = opponent;
     }
 
-    public String getName(){
-        return this.name;
+    public MyPlayer getMyPlayer(){
+        return this.myPlayer;
+    }
+
+    public Opponent getOpponent(){
+        return this.opponent;
     }
 }

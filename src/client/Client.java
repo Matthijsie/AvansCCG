@@ -45,30 +45,41 @@ public class Client {
             this.name = name;
             this.out.writeUTF(this.name);
 
-            this.outO.writeObject(new Game("TestGame2"));
-            this.outO.flush();
-
             //Handling incoming messages
-            new Thread ( () -> {
-                while ( true ) {
-                    try {
-                        String message = this.in.readUTF();
-                        System.out.println("Recieved Message: " + message);
-
-                        Platform.runLater( () -> this.gui.messageReceived(message));
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }).start();
+//            new Thread ( () -> {
+//                while ( true ) {
+//                    try {
+//                        String message = this.in.readUTF();
+//                        System.out.println("Received Message: " + message);
+//
+//                        Platform.runLater( () -> this.gui.messageReceived(message));
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }).start();
 
             //Handling incoming game Objects
+
             new Thread( () -> {
-                try {
-                    Game game = (Game) this.inO.readObject();
-                    this.gui.setGame(game);
-                } catch (IOException | ClassNotFoundException e) {
-                    e.printStackTrace();
+                while ( true ) {
+                    try {
+                        Object object = this.inO.readObject();
+
+                        if (object.getClass().equals(Game.class)) {
+                            Game game = (Game) object;
+                            this.gui.setGame(game);
+                            System.out.println("received game");
+                        }else if (object.getClass().equals(String.class)){
+                            String message = (String) object;
+
+                            Platform.runLater( () -> this.gui.messageReceived(message));
+                        }
+
+
+                    } catch (IOException | ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
                 }
             }).start();
 
@@ -80,17 +91,15 @@ public class Client {
     //sends message to the server
     public void writeUTF(String text){
         try {
-            if (!text.trim().equals("")) {
                 this.out.writeUTF(text);
-            }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void disconnect(){
+    public void writeObject(Object object){
         try {
-            this.socket.close();
+            this.outO.writeObject(object);
         } catch (IOException e) {
             e.printStackTrace();
         }
