@@ -76,7 +76,14 @@ public class Session implements Runnable {
         Collections.shuffle(deckPlayer1.getCards());
         LinkedList<Minion> testBoard = new LinkedList<>();
         testBoard.add(new Minion(0,1,1,"",""));
-        MyPlayer firstPlayerView = new MyPlayer(new Board(testBoard), new Hand(10), deckPlayer1, 30, 0, Color.red, 0);
+        testBoard.add(new Minion(0,2,2,"",""));
+        testBoard.add(new Minion(0,3,3,"",""));
+        testBoard.add(new Minion(0,4,4,"",""));
+        testBoard.add(new Minion(0,5,5,"",""));
+        testBoard.add(new Minion(0,6,6,"",""));
+        testBoard.add(new Minion(0,7,7,"",""));
+
+        MyPlayer firstPlayerView = new MyPlayer(new Board(testBoard, 7), new Hand(10), deckPlayer1, 30, 0, Color.red, 0);
         firstPlayerView.drawFromDeckToHand(3);
 
         //player 2
@@ -88,7 +95,7 @@ public class Session implements Runnable {
 
         Deck deckPlayer2 = new Deck(cardsPlayer2);
         Collections.shuffle(deckPlayer2.getCards());
-        MyPlayer secondPlayerView = new MyPlayer(new Board(), new Hand(10), deckPlayer2, 30, 0, Color.blue, 0);
+        MyPlayer secondPlayerView = new MyPlayer(new Board(7), new Hand(10), deckPlayer2, 30, 0, Color.blue, 0);
         secondPlayerView.drawFromDeckToHand(4);
 
         //===============setting information players know from one another=====================
@@ -100,7 +107,8 @@ public class Session implements Runnable {
                 secondPlayerView.getBoard().getMinions(),
                 secondPlayerView.getHealth(),
                 secondPlayerView.getMana(),
-                secondPlayerView.getPlayerColor());
+                secondPlayerView.getPlayerColor(),
+                secondPlayerView.getTotalMana());
 
         this.player1Game = new Game(firstPlayerView, firstPlayersOpponent);
 
@@ -112,7 +120,8 @@ public class Session implements Runnable {
                 firstPlayerView.getBoard().getMinions(),
                 firstPlayerView.getHealth(),
                 firstPlayerView.getMana(),
-                firstPlayerView.getPlayerColor());
+                firstPlayerView.getPlayerColor(),
+                firstPlayerView.getTotalMana());
 
         this.player2Game = new Game(secondPlayerView, secondPlayersOpponent);
 

@@ -272,10 +272,13 @@ public class ClientApplication extends Application {
         g2d.setColor(Color.black);
         g2d.draw(myBoardContainer);
 
+        //drawing the cards on my board
         for(int i = 0; i < this.game.getMyPlayer().getBoardSize(); i++){
             Minion minion = this.game.getMyPlayer().getBoard().getMinions().get(i);
-
-            minion.drawOnBoard(g2d, new Point2D.Double(this.canvas.getWidth()*0.25, this.canvas.getHeight()*0.52), this.canvas);
+            minion.drawOnBoard(
+                    g2d,
+                    new Point2D.Double(this.canvas.getWidth()*0.21 + this.canvas.getWidth()*0.08*i, this.canvas.getHeight()*0.52),
+                    this.canvas);
         }
 
         //drawing opponent's board
@@ -289,6 +292,15 @@ public class ClientApplication extends Application {
         g2d.fill(opponentBoardContainer);
         g2d.setColor(Color.black);
         g2d.draw(opponentBoardContainer);
+
+        //drawing the cards on the opponent's board
+        for (int i = 0; i < this.game.getOpponent().getCardsOnEnemyBoard().size(); i++){
+            Minion minion = this.game.getOpponent().getCardsOnEnemyBoard().get(i);
+            minion.drawOnBoard(
+                    g2d,
+                    new Point2D.Double(this.canvas.getWidth()*0.21 + this.canvas.getWidth()*0.08*i, this.canvas.getHeight()*0.32),
+                    this.canvas);
+        }
     }
 
     //todo implement draw method
