@@ -352,7 +352,7 @@ public class ClientApplication extends Application {
                 this.canvas.getWidth()*0.6,
                 this.canvas.getHeight()*0.03,
                 this.canvas.getWidth()*0.35,
-                this.canvas.getHeight()*0.05);
+                this.canvas.getHeight()*0.06);
 
         g2d.setColor(Color.black);
         g2d.draw(opponentManaContainer);
