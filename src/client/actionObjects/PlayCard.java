@@ -2,7 +2,9 @@ package client.actionObjects;
 
 import server.game.cards.Card;
 
-public class PlayCard {
+import java.io.Serializable;
+
+public class PlayCard implements Serializable {
 
     private Card card;
 

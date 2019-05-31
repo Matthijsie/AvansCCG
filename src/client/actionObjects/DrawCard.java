@@ -1,4 +1,6 @@
 package client.actionObjects;
 
-public class DrawCard {
+import java.io.Serializable;
+
+public class DrawCard implements Serializable {
 }

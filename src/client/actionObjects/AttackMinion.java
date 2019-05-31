@@ -2,7 +2,9 @@ package client.actionObjects;
 
 import server.game.cards.Minion;
 
-public class AttackMinion {
+import java.io.Serializable;
+
+public class AttackMinion implements Serializable {
 
     private Minion minionAttacked;
     private Minion minionAttacking;

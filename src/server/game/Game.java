@@ -19,4 +19,8 @@ public class Game implements Serializable {
     public Opponent getOpponent(){
         return this.opponent;
     }
+
+    public void setOpponent(Opponent opponent){
+        this.opponent = opponent;
+    }
 }

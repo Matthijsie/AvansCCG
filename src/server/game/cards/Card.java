@@ -43,4 +43,19 @@ public abstract class Card implements Serializable {
     }
 
     public abstract Shape getShape();
+
+    public boolean equals(Object object){
+        if (object == null){
+            return false;
+        }
+
+        if (object.getClass() != this.getClass()){
+            return false;
+        }
+
+        Card card = (Card) object;
+
+        return this.cardName.equals(card.getCardName());
+
+    }
 }
