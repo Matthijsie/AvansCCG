@@ -3,7 +3,9 @@ package server;
 import server.game.Game;
 import server.game.MyPlayer;
 import server.game.Opponent;
+import server.game.cardcontainers.Board;
 import server.game.cardcontainers.Deck;
+import server.game.cardcontainers.Hand;
 import server.game.cards.Card;
 import server.game.cards.Minion;
 
@@ -66,31 +68,36 @@ public class Session implements Runnable {
         //=============setting information players know themselves===========================
         //player 1
         LinkedList<Card> cardsPlayer1 = new LinkedList<>();
-        for (int i = 0; i < 30; i++){
+        for (int i = 0; i < 15; i++){
             cardsPlayer1.add(new Minion(0,0,0,"DummyPlayer1", ""));
+            cardsPlayer1.add(new Minion(10, 10, 10, "SecondDummy", ""));
         }
         Deck deckPlayer1 = new Deck(cardsPlayer1);
         Collections.shuffle(deckPlayer1.getCards());
-        MyPlayer firstPlayerView = new MyPlayer(deckPlayer1, 30, 0, Color.red);
+        LinkedList<Minion> testBoard = new LinkedList<>();
+        testBoard.add(new Minion(0,1,1,"",""));
+        MyPlayer firstPlayerView = new MyPlayer(new Board(testBoard), new Hand(10), deckPlayer1, 30, 0, Color.red, 0);
         firstPlayerView.drawFromDeckToHand(3);
 
         //player 2
         LinkedList<Card> cardsPlayer2 = new LinkedList<>();
-        for (int i = 0; i < 30; i++){
+        for (int i = 0; i < 15; i++){
             cardsPlayer2.add(new Minion(0,0,0,"DummyPlayer2", ""));
+            cardsPlayer2.add(new Minion(10, 10, 10, "AnotherDummy", ""));
         }
 
         Deck deckPlayer2 = new Deck(cardsPlayer2);
         Collections.shuffle(deckPlayer2.getCards());
-        MyPlayer secondPlayerView = new MyPlayer(deckPlayer2, 30, 0, Color.blue);
+        MyPlayer secondPlayerView = new MyPlayer(new Board(), new Hand(10), deckPlayer2, 30, 0, Color.blue, 0);
         secondPlayerView.drawFromDeckToHand(4);
 
         //===============setting information players know from one another=====================
         //player 1
-        Opponent firstPlayersOpponent = new Opponent(secondPlayerView.getHandSize(),
+        Opponent firstPlayersOpponent = new Opponent(
+                secondPlayerView.getHandSize(),
                 0,
                 secondPlayerView.getDeckSize(),
-                new LinkedList<>(),
+                secondPlayerView.getBoard().getMinions(),
                 secondPlayerView.getHealth(),
                 secondPlayerView.getMana(),
                 secondPlayerView.getPlayerColor());
@@ -98,10 +105,11 @@ public class Session implements Runnable {
         this.player1Game = new Game(firstPlayerView, firstPlayersOpponent);
 
         //player 2
-        Opponent secondPlayersOpponent = new Opponent(firstPlayerView.getHandSize(),
+        Opponent secondPlayersOpponent = new Opponent(
+                firstPlayerView.getHandSize(),
                 0,
                 firstPlayerView.getDeckSize(),
-                new LinkedList<>(),
+                firstPlayerView.getBoard().getMinions(),
                 firstPlayerView.getHealth(),
                 firstPlayerView.getMana(),
                 firstPlayerView.getPlayerColor());

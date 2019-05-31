@@ -3,6 +3,7 @@ package server.game.cards;
 import org.jfree.fx.FXGraphics2D;
 import org.jfree.fx.ResizableCanvas;
 
+import java.awt.*;
 import java.awt.geom.Point2D;
 import java.io.Serializable;
 
@@ -33,8 +34,6 @@ public abstract class Card implements Serializable {
 
     public abstract void drawInHand(FXGraphics2D g2d, ResizableCanvas canvas, Point2D position);
 
-    public abstract void drawOnBoard(FXGraphics2D g2d);
-
     public Point2D getPosition(){
         return this.position;
     }
@@ -42,4 +41,6 @@ public abstract class Card implements Serializable {
     public void setPosition(Point2D position){
         this.position = position;
     }
+
+    public abstract Shape getShape();
 }

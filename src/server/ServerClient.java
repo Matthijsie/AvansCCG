@@ -52,7 +52,7 @@ public class ServerClient implements Runnable {
             this.out.writeUTF("Welcome to the session! A game will be starting once another player has joined");
 
             this.name = in.readUTF();
-            System.out.println("#### " + this.name + " joined the game!");
+            System.out.println("#### " + this.name + " joined the server!");
 
             new Thread(()->{
                 while (true) {

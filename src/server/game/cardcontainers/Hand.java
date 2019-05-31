@@ -2,7 +2,8 @@ package server.game.cardcontainers;
 
 import server.game.cards.Card;
 
-import java.io.Serializable;
+import java.awt.*;
+import java.util.LinkedList;
 
 public class Hand extends CardContainer {
 
@@ -17,5 +18,13 @@ public class Hand extends CardContainer {
         if (this.cards.size() + 1 <= this.maxSize){
             this.cards.add(card);
         }
+    }
+
+    public LinkedList<Shape> getCardShapesInHand(){
+        LinkedList<Shape> shapes = new LinkedList<>();
+        for (Card card : this.cards){
+            shapes.add(card.getShape());
+        }
+        return shapes;
     }
 }

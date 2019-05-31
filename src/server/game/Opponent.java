@@ -1,6 +1,7 @@
 package server.game;
 
 import server.game.cards.Card;
+import server.game.cards.Minion;
 
 import java.awt.*;
 import java.io.Serializable;
@@ -11,12 +12,12 @@ public class Opponent implements Serializable {
     private int cardAmountInHand;
     private int cardAmountInGraveYard;
     private int cardAmountInDeck;
-    private List<Card> cardsOnEnemyBoard;
+    private List<Minion> cardsOnEnemyBoard;
     private int health;
     private int mana;
     private Color color;
 
-    public Opponent(int cardAmountInhand, int cardAmountInGraveYard, int cardAmountInDeck, List<Card> cardsOnEnemyBoard, int health, int mana, Color color) {
+    public Opponent(int cardAmountInhand, int cardAmountInGraveYard, int cardAmountInDeck, List<Minion> cardsOnEnemyBoard, int health, int mana, Color color) {
         this.cardAmountInHand = cardAmountInhand;
         this.cardAmountInGraveYard = cardAmountInGraveYard;
         this.cardAmountInDeck = cardAmountInDeck;
@@ -34,7 +35,7 @@ public class Opponent implements Serializable {
         return cardAmountInDeck;
     }
 
-    public List<Card> getCardsOnEnemyBoard() {
+    public List<Minion> getCardsOnEnemyBoard() {
         return cardsOnEnemyBoard;
     }
 

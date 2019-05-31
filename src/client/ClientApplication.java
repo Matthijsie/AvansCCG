@@ -17,6 +17,7 @@ import org.jfree.fx.FXGraphics2D;
 import org.jfree.fx.ResizableCanvas;
 import server.game.Game;
 import server.game.cards.Card;
+import server.game.cards.Minion;
 
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
@@ -118,6 +119,7 @@ public class ClientApplication extends Application {
         g2d.setColor(Color.white);
         g2d.fill(screen);
 
+        //todo: draw the button only after the game has started / add "end turn" text
         g2d.setColor(Color.black);
         this.endTurnButton = new Rectangle2D.Double(canvas.getWidth()*0.90, canvas.getHeight()*0.47, canvas.getWidth()*0.10, canvas.getHeight()*0.06);
         g2d.draw(this.endTurnButton);
@@ -126,6 +128,8 @@ public class ClientApplication extends Application {
             drawPlayerPortraits(g2d);
             drawDecks(g2d);
             drawHands(g2d);
+            drawBoard(g2d);
+            drawMana(g2d);
         }
     }
 
@@ -246,5 +250,49 @@ public class ClientApplication extends Application {
 
             i++;
         }
+
+        //drawing opponent's hand
+        for (int j = 0; j < this.game.getOpponent().getCardAmountInHand(); j++){
+            Rectangle2D card = new Rectangle2D.Double(this.canvas.getWidth()*0.07*j, 0, this.canvas.getWidth()*0.07, this.canvas.getHeight()*0.2);
+            g2d.draw(card);
+        }
+    }
+
+    private void drawBoard(FXGraphics2D g2d){
+
+        //drawing my board
+        Rectangle2D myBoardContainer = new Rectangle2D.Double(
+                this.canvas.getWidth()*0.2,
+                this.canvas.getHeight()* 0.5,
+                this.canvas.getWidth()*0.6,
+                this.canvas.getHeight()*0.2);
+
+        g2d.setColor(Color.pink);
+        g2d.fill(myBoardContainer);
+        g2d.setColor(Color.black);
+        g2d.draw(myBoardContainer);
+
+        for(int i = 0; i < this.game.getMyPlayer().getBoardSize(); i++){
+            Minion minion = this.game.getMyPlayer().getBoard().getMinions().get(i);
+
+            minion.drawOnBoard(g2d, new Point2D.Double(this.canvas.getWidth()*0.25, this.canvas.getHeight()*0.52), this.canvas);
+        }
+
+        //drawing opponent's board
+        Rectangle2D opponentBoardContainer = new Rectangle2D.Double(
+                this.canvas.getWidth()*0.2,
+                this.canvas.getHeight()*0.3,
+                this.canvas.getWidth()*0.6,
+                this.canvas.getHeight()*0.2);
+
+        g2d.setColor(Color.pink);
+        g2d.fill(opponentBoardContainer);
+        g2d.setColor(Color.black);
+        g2d.draw(opponentBoardContainer);
+    }
+
+    //todo implement draw method
+    private void drawMana(FXGraphics2D g2d){
+
     }
 }

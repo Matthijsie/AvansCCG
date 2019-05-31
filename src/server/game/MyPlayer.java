@@ -1,5 +1,6 @@
 package server.game;
 
+import server.game.cardcontainers.Board;
 import server.game.cardcontainers.Deck;
 import server.game.cardcontainers.Hand;
 import server.game.cards.Card;
@@ -9,18 +10,22 @@ import java.io.Serializable;
 
 public class MyPlayer implements Serializable {
 
+    private Board board;
     private Hand hand;
     private Deck deck;
     private int health;
     private int mana;
+    private int totalMana;
     private Color playerColor;
 
-    public MyPlayer(Deck deck, int health, int mana, Color color) {
-        this.hand = new Hand(10);
+    public MyPlayer(Board board, Hand hand, Deck deck, int health, int mana, Color color, int totalMana) {
+        this.board = board;
+        this.hand = hand;
         this.deck = deck;
         this.health = health;
         this.mana = mana;
         this.playerColor = color;
+        this.totalMana = totalMana;
     }
 
     public Hand getHand() {
@@ -47,8 +52,20 @@ public class MyPlayer implements Serializable {
         return this.hand.getCards().size();
     }
 
+    public int getBoardSize(){
+        return this.board.getMinions().size();
+    }
+
     public Color getPlayerColor() {
         return this.playerColor;
+    }
+
+    public int getTotalMana() {
+        return totalMana;
+    }
+
+    public Board getBoard(){
+        return this.board;
     }
 
     public void drawFromDeckToHand(int amount) {
