@@ -75,6 +75,8 @@ public class Session implements Runnable {
         Deck deckPlayer1 = new Deck(cardsPlayer1);
         Collections.shuffle(deckPlayer1.getCards());
         LinkedList<Minion> testBoard = new LinkedList<>();
+
+        //todo remove these add() functions when it's possible to play cards from hand
         testBoard.add(new Minion(0,1,1,"",""));
         testBoard.add(new Minion(0,2,2,"",""));
         testBoard.add(new Minion(0,3,3,"",""));
@@ -83,7 +85,7 @@ public class Session implements Runnable {
         testBoard.add(new Minion(0,6,6,"",""));
         testBoard.add(new Minion(0,7,7,"",""));
 
-        MyPlayer firstPlayerView = new MyPlayer(new Board(testBoard, 7), new Hand(10), deckPlayer1, 30, 0, Color.red, 0);
+        MyPlayer firstPlayerView = new MyPlayer(new Board(testBoard, 7), new Hand(10), deckPlayer1, 30, 0, Color.red, 0, true);
         firstPlayerView.drawFromDeckToHand(3);
 
         //player 2
@@ -95,14 +97,13 @@ public class Session implements Runnable {
 
         Deck deckPlayer2 = new Deck(cardsPlayer2);
         Collections.shuffle(deckPlayer2.getCards());
-        MyPlayer secondPlayerView = new MyPlayer(new Board(7), new Hand(10), deckPlayer2, 30, 0, Color.blue, 0);
+        MyPlayer secondPlayerView = new MyPlayer(new Board(7), new Hand(10), deckPlayer2, 30, 0, Color.blue, 0, false);
         secondPlayerView.drawFromDeckToHand(4);
 
         //===============setting information players know from one another=====================
         //player 1
         Opponent firstPlayersOpponent = new Opponent(
                 secondPlayerView.getHandSize(),
-                0,
                 secondPlayerView.getDeckSize(),
                 secondPlayerView.getBoard().getMinions(),
                 secondPlayerView.getHealth(),
@@ -115,7 +116,6 @@ public class Session implements Runnable {
         //player 2
         Opponent secondPlayersOpponent = new Opponent(
                 firstPlayerView.getHandSize(),
-                0,
                 firstPlayerView.getDeckSize(),
                 firstPlayerView.getBoard().getMinions(),
                 firstPlayerView.getHealth(),
@@ -132,6 +132,7 @@ public class Session implements Runnable {
         this.gameHasStarted = true;
     }
 
+    //todo remove game received and add logic for all action objects received
     public void objectReceived(Object object, ServerClient sender){
         if (object.getClass().equals(Game.class)) {
             Game game = (Game) object;

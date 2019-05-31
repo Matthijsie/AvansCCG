@@ -9,7 +9,6 @@ import java.util.List;
 public class Opponent implements Serializable {
 
     private int cardAmountInHand;
-    private int cardAmountInGraveYard;
     private int cardAmountInDeck;
     private List<Minion> cardsOnEnemyBoard;
     private int health;
@@ -17,19 +16,14 @@ public class Opponent implements Serializable {
     private int mana;
     private Color color;
 
-    public Opponent(int cardAmountInhand, int cardAmountInGraveYard, int cardAmountInDeck, List<Minion> cardsOnEnemyBoard, int health, int mana, Color color, int totalMana) {
-        this.cardAmountInHand = cardAmountInhand;
-        this.cardAmountInGraveYard = cardAmountInGraveYard;
+    public Opponent(int cardAmountInHand, int cardAmountInDeck, List<Minion> cardsOnEnemyBoard, int health, int mana, Color color, int totalMana) {
+        this.cardAmountInHand = cardAmountInHand;
         this.cardAmountInDeck = cardAmountInDeck;
         this.cardsOnEnemyBoard = cardsOnEnemyBoard;
         this.health = health;
         this.mana = mana;
         this.color = color;
         this.totalMana = totalMana;
-    }
-
-    public int getCardAmountInGraveYard() {
-        return cardAmountInGraveYard;
     }
 
     public int getCardAmountInDeck() {

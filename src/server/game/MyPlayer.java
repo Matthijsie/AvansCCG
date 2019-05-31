@@ -17,8 +17,9 @@ public class MyPlayer implements Serializable {
     private int mana;
     private int totalMana;
     private Color playerColor;
+    private boolean myTurn;
 
-    public MyPlayer(Board board, Hand hand, Deck deck, int health, int mana, Color color, int totalMana) {
+    public MyPlayer(Board board, Hand hand, Deck deck, int health, int mana, Color color, int totalMana, boolean myTurn) {
         this.board = board;
         this.hand = hand;
         this.deck = deck;
@@ -26,6 +27,7 @@ public class MyPlayer implements Serializable {
         this.mana = mana;
         this.playerColor = color;
         this.totalMana = totalMana;
+        this.myTurn = myTurn;
     }
 
     public Hand getHand() {
@@ -62,6 +64,10 @@ public class MyPlayer implements Serializable {
 
     public int getTotalMana() {
         return totalMana;
+    }
+
+    public boolean isMyTurn(){
+        return this.myTurn;
     }
 
     public Board getBoard(){

@@ -119,7 +119,7 @@ public class ClientApplication extends Application {
         g2d.setColor(Color.white);
         g2d.fill(screen);
 
-        //todo: draw the button only after the game has started / add "end turn" text
+        //todo: draw the button only after the game has started and add "end turn" text
         g2d.setColor(Color.black);
         this.endTurnButton = new Rectangle2D.Double(canvas.getWidth()*0.90, canvas.getHeight()*0.47, canvas.getWidth()*0.10, canvas.getHeight()*0.06);
         g2d.draw(this.endTurnButton);
@@ -137,6 +137,7 @@ public class ClientApplication extends Application {
 
     }
 
+    //todo check if cards/minions/endturnbutton are pressed and send actionObjects to the server
     private void onMousePressed(MouseEvent e){
         Point2D mousePosition = new Point2D.Double(e.getX(), e.getY());
 
@@ -258,6 +259,7 @@ public class ClientApplication extends Application {
         }
     }
 
+    //todo make it so the minions get drawn relative to the board container rather than the canvas (need to change method drawOnBoard() in Minion as well)
     private void drawBoard(FXGraphics2D g2d){
 
         //drawing my board
@@ -303,8 +305,16 @@ public class ClientApplication extends Application {
         }
     }
 
-    //todo implement draw method
     private void drawMana(FXGraphics2D g2d){
 
+        //draw my mana
+        Rectangle2D manaContainer = new Rectangle2D.Double(
+                this.canvas.getWidth()*0.6,
+                this.canvas.getHeight()*0.92,
+                this.canvas.getWidth()*0.35,
+                this.canvas.getHeight()*0.06);
+
+        g2d.setColor(Color.black);
+        g2d.draw(manaContainer);
     }
 }
