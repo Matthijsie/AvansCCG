@@ -3,12 +3,15 @@ package server;
 import server.game.Game;
 import server.game.MyPlayer;
 import server.game.Opponent;
+import server.game.cardcontainers.Board;
 import server.game.cardcontainers.Deck;
+import server.game.cardcontainers.Hand;
 import server.game.cards.Card;
+import server.game.cards.Minion;
 
-import java.util.ArrayList;
+import java.awt.*;
+import java.util.Collections;
 import java.util.LinkedList;
-import java.util.List;
 
 public class Session implements Runnable {
 
@@ -27,28 +30,24 @@ public class Session implements Runnable {
         while (true) {
             if (this.player2 != null && !this.gameHasStarted){
                setUpGame();
+            }else if (this.gameHasStarted){
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
-
-
         }
     }
 
-    public void sendToAllClients(Object object){
+    private void sendToAllClients(Object object){
         this.player1.writeObject(object);
         if (this.player2 != null){
             this.player2.writeObject(object);
         }
     }
 
-    //sends a message to all clients in the session
-//    public void sendToAllClients(String text) {
-//        this.player1.writeUTF(text);
-//        if (this.player2 != null) {
-//            this.player2.writeUTF(text);
-//        }
-//    }
-
-    public void updateAllClientGames(){
+    private void updateAllClientGames(){
         this.player1.writeObject(this.player1Game);
         this.player2.writeObject(this.player2Game);
     }
@@ -65,35 +64,86 @@ public class Session implements Runnable {
         this.secondPlayer.start();
     }
 
-    public void setPlayerGames(Game game, int playerNumber){
-        try {
-            if (playerNumber == 1) {
-                this.player1Game = game;
-            } else if (playerNumber == 2) {
-                this.player2Game = game;
-            }
-        }catch (Exception e){
-            System.out.println("Error: could not find player");
-        }
-    }
-
     private void setUpGame(){
-        //sets the information players know from themselves
-        Deck deckPlayer1 = new Deck();
-        Deck deckPlayer2 = new Deck();
+        //=============setting information players know themselves===========================
+        //player 1
+        LinkedList<Card> cardsPlayer1 = new LinkedList<>();
+        for (int i = 0; i < 15; i++){
+            cardsPlayer1.add(new Minion(0,0,0,"DummyPlayer1", ""));
+            cardsPlayer1.add(new Minion(10, 10, 10, "SecondDummy", ""));
+        }
+        Deck deckPlayer1 = new Deck(cardsPlayer1);
+        Collections.shuffle(deckPlayer1.getCards());
+        LinkedList<Minion> testBoard = new LinkedList<>();
 
-        MyPlayer firstPlayerView = new MyPlayer(deckPlayer1);
-        MyPlayer secondPlayerView = new MyPlayer(deckPlayer2);
+        //todo remove these add() functions when it's possible to play cards from hand
+        testBoard.add(new Minion(0,1,1,"",""));
+        testBoard.add(new Minion(0,2,2,"",""));
+        testBoard.add(new Minion(0,3,3,"",""));
+        testBoard.add(new Minion(0,4,4,"",""));
+        testBoard.add(new Minion(0,5,5,"",""));
+        testBoard.add(new Minion(0,6,6,"",""));
+        testBoard.add(new Minion(0,7,7,"",""));
 
-        //sets the information the players know from their opponent
-        Opponent firstPlayersOpponent = new Opponent(0, 0, 0, new LinkedList<>(), 0, 0);
-        Opponent secondPlayersOpponent = new Opponent(0, 0, 0, new LinkedList<>(), 0, 0);
+        //todo set totalmana and mana back to 0 when games can be played
+        MyPlayer firstPlayerView = new MyPlayer(new Board(testBoard, 7), new Hand(10), deckPlayer1, 30, 5, Color.red, 7, true);
+        firstPlayerView.drawFromDeckToHand(3);
+
+        //player 2
+        LinkedList<Card> cardsPlayer2 = new LinkedList<>();
+        for (int i = 0; i < 15; i++){
+            cardsPlayer2.add(new Minion(0,0,0,"DummyPlayer2", ""));
+            cardsPlayer2.add(new Minion(10, 10, 10, "AnotherDummy", ""));
+        }
+
+        Deck deckPlayer2 = new Deck(cardsPlayer2);
+        Collections.shuffle(deckPlayer2.getCards());
+        MyPlayer secondPlayerView = new MyPlayer(new Board(7), new Hand(10), deckPlayer2, 30, 0, Color.blue, 0, false);
+        secondPlayerView.drawFromDeckToHand(4);
+
+        //===============setting information players know from one another=====================
+        //player 1
+        Opponent firstPlayersOpponent = new Opponent(
+                secondPlayerView.getHandSize(),
+                secondPlayerView.getDeckSize(),
+                secondPlayerView.getBoard().getMinions(),
+                secondPlayerView.getHealth(),
+                secondPlayerView.getMana(),
+                secondPlayerView.getPlayerColor(),
+                secondPlayerView.getTotalMana());
 
         this.player1Game = new Game(firstPlayerView, firstPlayersOpponent);
-        this.player2Game = new Game(secondPlayerView, secondPlayersOpponent);
-        updateAllClientGames();
 
+        //player 2
+        Opponent secondPlayersOpponent = new Opponent(
+                firstPlayerView.getHandSize(),
+                firstPlayerView.getDeckSize(),
+                firstPlayerView.getBoard().getMinions(),
+                firstPlayerView.getHealth(),
+                firstPlayerView.getMana(),
+                firstPlayerView.getPlayerColor(),
+                firstPlayerView.getTotalMana());
+
+        this.player2Game = new Game(secondPlayerView, secondPlayersOpponent);
+
+
+
+        //=================sending games to clients and starting game============================
+        updateAllClientGames();
         this.gameHasStarted = true;
     }
 
+    //todo remove game received and add logic for all action objects received
+    public void objectReceived(Object object, ServerClient sender){
+        if (object.getClass().equals(Game.class)) {
+            Game game = (Game) object;
+
+            updateAllClientGames();
+
+        }else if (object.getClass().equals(String.class)){
+            String message = (String) object;
+            System.out.println("client send message: " + message);
+            sendToAllClients("(" + sender.getName() + ") " + message);
+        }
+    }
 }

@@ -9,7 +9,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
@@ -17,11 +16,13 @@ import javafx.stage.Stage;
 import org.jfree.fx.FXGraphics2D;
 import org.jfree.fx.ResizableCanvas;
 import server.game.Game;
+import server.game.cards.Card;
+import server.game.cards.Minion;
 
 import java.awt.*;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-
 
 public class ClientApplication extends Application {
 
@@ -32,7 +33,6 @@ public class ClientApplication extends Application {
     private TextField chatInput;
     private Game game;
     private Rectangle2D endTurnButton;
-    private double previousCanvasWidth, previousCanvasHeigth;
 
     public static void main(String[] args) {
         launch(ClientApplication.class);
@@ -43,7 +43,8 @@ public class ClientApplication extends Application {
         //============Login screen================
         BorderPane firstPane = new BorderPane();
         VBox loginBox = new VBox();
-        TextField loginField = new TextField("Enter a name");
+        TextField loginField = new TextField();
+        loginField.setPromptText("Enter a name");
         Button loginButton = new Button("Log in");
         firstPane.setCenter(loginBox);
         loginBox.getChildren().addAll(loginField, loginButton);
@@ -56,8 +57,6 @@ public class ClientApplication extends Application {
         mainPane.setCenter(this.canvas);
         this.endTurnButton = new Rectangle2D.Double(canvas.getWidth()*0.95, canvas.getHeight()*0.45, canvas.getWidth()*0.05, canvas.getHeight()*0.1);
 
-        previousCanvasWidth = canvas.getWidth();
-        previousCanvasHeigth = canvas.getHeight();
         //chat stuff
         BorderPane chatContainer = new BorderPane();
         this.chatBox = new VBox();
@@ -104,7 +103,7 @@ public class ClientApplication extends Application {
                 this.client.connect(loginField.getText());
                 this.chatInput.setPromptText("Chat as " + loginField.getText());
                 stage.setScene(new Scene(mainPane, 720, 720));
-
+                stage.setFullScreen(true);
             }
         });
 
@@ -120,20 +119,25 @@ public class ClientApplication extends Application {
         g2d.setColor(Color.white);
         g2d.fill(screen);
 
+        //todo: draw the button only after the game has started and add "end turn" text
         g2d.setColor(Color.black);
+        this.endTurnButton = new Rectangle2D.Double(canvas.getWidth()*0.90, canvas.getHeight()*0.47, canvas.getWidth()*0.10, canvas.getHeight()*0.06);
         g2d.draw(this.endTurnButton);
 
-    }
-
-    public void update(double deltaTime){
-        if (this.previousCanvasWidth != this.canvas.getWidth() || this.previousCanvasHeigth != this.canvas.getHeight()){
-            this.previousCanvasHeigth = this.canvas.getHeight();
-            this.previousCanvasWidth = this.canvas.getWidth();
-
-            this.endTurnButton = new Rectangle2D.Double(canvas.getWidth()*0.90, canvas.getHeight()*0.47, canvas.getWidth()*0.10, canvas.getHeight()*0.06);
+        if (this.game != null){
+            drawPlayerPortraits(g2d);
+            drawDecks(g2d);
+            drawHands(g2d);
+            drawBoard(g2d);
+            drawMana(g2d);
         }
     }
 
+    public void update(double deltaTime){
+
+    }
+
+    //todo check if cards/minions/endturnbutton are pressed and send actionObjects to the server
     private void onMousePressed(MouseEvent e){
         Point2D mousePosition = new Point2D.Double(e.getX(), e.getY());
 
@@ -158,7 +162,6 @@ public class ClientApplication extends Application {
         label.setPadding(new Insets(1,10,1,10));
 
         this.chatBox.getChildren().add(label);
-//        this.client.writeStringObject(this.chatInput.getText());
         this.chatInput.clear();
         this.scrollPane.setVvalue(1.0);
 
@@ -166,5 +169,221 @@ public class ClientApplication extends Application {
 
     public void setGame(Game game){
         this.game = game;
+    }
+
+    private void drawPlayerPortraits(FXGraphics2D g2d){
+        Rectangle2D myPlayerPortrait = new Rectangle2D.Double(this.canvas.getWidth()*0.45,
+                this.canvas.getHeight()*0.75,
+                this.canvas.getWidth()*0.1,
+                this.canvas.getHeight()*0.2);
+
+        g2d.setColor(this.game.getMyPlayer().getPlayerColor());
+        g2d.fill(myPlayerPortrait);
+
+        Rectangle2D opponentPortrait = new Rectangle2D.Double(this.canvas.getWidth()*0.45,
+                this.canvas.getHeight()*0.05,
+                this.canvas.getWidth()*0.1,
+                this.canvas.getHeight()*0.2);
+
+        g2d.setColor(this.game.getOpponent().getColor());
+        g2d.fill(opponentPortrait);
+
+        Ellipse2D healthContainer1 = new Ellipse2D.Double(myPlayerPortrait.getX() + myPlayerPortrait.getWidth()*0.3,
+                myPlayerPortrait.getY() - myPlayerPortrait.getHeight()*0.2,
+                myPlayerPortrait.getWidth()*0.4,
+                myPlayerPortrait.getWidth()*0.4);
+        g2d.setColor(Color.white);
+        g2d.fill(healthContainer1);
+
+        Ellipse2D healthContainer2 = new Ellipse2D.Double(opponentPortrait.getX() + opponentPortrait.getWidth()*0.3,
+                opponentPortrait.getY() + opponentPortrait.getHeight()*0.8,
+                opponentPortrait.getWidth()*0.4,
+                opponentPortrait.getWidth()*0.4);
+        g2d.fill(healthContainer2);
+
+        g2d.setColor(Color.black);
+        g2d.drawString(String.valueOf(this.game.getMyPlayer().getHealth()), (int)healthContainer1.getCenterX(), (int)healthContainer1.getCenterY());
+        g2d.draw(myPlayerPortrait);
+        g2d.draw(healthContainer1);
+
+        g2d.drawString(String.valueOf(this.game.getOpponent().getHealth()), (int)healthContainer2.getCenterX(), (int)healthContainer2.getCenterY());
+        g2d.draw(opponentPortrait);
+        g2d.draw(healthContainer2);
+    }
+
+    private void drawDecks(FXGraphics2D g2d){
+
+        //drawing my deck
+        Rectangle2D myDeck = new Rectangle2D.Double(this.canvas.getWidth()*0.8,
+                this.canvas.getHeight()*0.8,
+                this.canvas.getWidth()*0.1,
+                this.canvas.getHeight()*0.1);
+
+        g2d.setColor(Color.lightGray);
+        g2d.fill(myDeck);
+
+        //drawing opponent deck
+        Rectangle2D opponentDeck = new Rectangle2D.Double(this.canvas.getWidth()*0.8,
+                this.canvas.getHeight()*0.1,
+                this.canvas.getWidth()*0.1,
+                this.canvas.getHeight()*0.1);
+
+        g2d.fill(opponentDeck);
+
+        //draw method and adding numbers for the deck sizes
+        g2d.setColor(Color.black);
+        g2d.draw(myDeck);
+        g2d.draw(opponentDeck);
+
+        g2d.drawString(String.valueOf(this.game.getMyPlayer().getDeck().getCards().size()), (int)myDeck.getCenterX(), (int)myDeck.getCenterY());
+        g2d.drawString(String.valueOf(this.game.getOpponent().getCardAmountInDeck()), (int)opponentDeck.getCenterX(), (int)opponentDeck.getCenterY());
+
+    }
+
+    private void drawHands(FXGraphics2D g2d){
+
+        //drawing my hand
+        int i = 0;
+        for (Card card : this.game.getMyPlayer().getHand().getCards()) {
+
+            Point2D cardPosition = new Point2D.Double(this.canvas.getWidth()*0.07*i, this.canvas.getHeight()*0.8);
+            card.drawInHand(g2d, this.canvas, cardPosition);
+
+            i++;
+        }
+
+        //drawing opponent's hand
+        for (int j = 0; j < this.game.getOpponent().getCardAmountInHand(); j++){
+            Rectangle2D card = new Rectangle2D.Double(this.canvas.getWidth()*0.07*j, 0, this.canvas.getWidth()*0.07, this.canvas.getHeight()*0.2);
+            g2d.draw(card);
+        }
+    }
+
+    //todo make it so the minions get drawn relative to the board container rather than the canvas (need to change method drawOnBoard() in Minion as well)
+    private void drawBoard(FXGraphics2D g2d){
+
+        //drawing my board
+        Rectangle2D myBoardContainer = new Rectangle2D.Double(
+                this.canvas.getWidth()*0.2,
+                this.canvas.getHeight()* 0.5,
+                this.canvas.getWidth()*0.6,
+                this.canvas.getHeight()*0.2);
+
+        g2d.setColor(Color.pink);
+        g2d.fill(myBoardContainer);
+        g2d.setColor(Color.black);
+        g2d.draw(myBoardContainer);
+
+        //drawing the cards on my board
+        for(int i = 0; i < this.game.getMyPlayer().getBoardSize(); i++){
+            Minion minion = this.game.getMyPlayer().getBoard().getMinions().get(i);
+            minion.drawOnBoard(
+                    g2d,
+                    new Point2D.Double(this.canvas.getWidth()*0.21 + this.canvas.getWidth()*0.08*i, this.canvas.getHeight()*0.52),
+                    this.canvas);
+        }
+
+        //drawing opponent's board
+        Rectangle2D opponentBoardContainer = new Rectangle2D.Double(
+                this.canvas.getWidth()*0.2,
+                this.canvas.getHeight()*0.3,
+                this.canvas.getWidth()*0.6,
+                this.canvas.getHeight()*0.2);
+
+        g2d.setColor(Color.pink);
+        g2d.fill(opponentBoardContainer);
+        g2d.setColor(Color.black);
+        g2d.draw(opponentBoardContainer);
+
+        //drawing the cards on the opponent's board
+        for (int i = 0; i < this.game.getOpponent().getCardsOnEnemyBoard().size(); i++){
+            Minion minion = this.game.getOpponent().getCardsOnEnemyBoard().get(i);
+            minion.drawOnBoard(
+                    g2d,
+                    new Point2D.Double(this.canvas.getWidth()*0.21 + this.canvas.getWidth()*0.08*i, this.canvas.getHeight()*0.32),
+                    this.canvas);
+        }
+    }
+
+    private void drawMana(FXGraphics2D g2d){
+
+        //draw my mana
+        Rectangle2D manaContainer = new Rectangle2D.Double(
+                this.canvas.getWidth()*0.6,
+                this.canvas.getHeight()*0.92,
+                this.canvas.getWidth()*0.35,
+                this.canvas.getHeight()*0.06);
+
+        g2d.setColor(Color.black);
+        g2d.draw(manaContainer);
+
+        int i = 0;
+        for (int j = 0 ; j < this.game.getMyPlayer().getMana(); j++){
+            Ellipse2D manaCrystal = new Ellipse2D.Double(
+                    manaContainer.getX() + manaContainer.getWidth()/10 *i,
+                    manaContainer.getY(),
+                    manaContainer.getHeight(),
+                    manaContainer.getHeight());
+
+            g2d.setColor(Color.cyan);
+            g2d.fill(manaCrystal);
+            g2d.setColor(Color.black);
+            g2d.draw(manaCrystal);
+            i++;
+        }
+
+        for (int j = 0; j < this.game.getMyPlayer().getTotalMana()-this.game.getMyPlayer().getMana(); j++) {
+            Ellipse2D spendManaCrystal = new Ellipse2D.Double(
+                    manaContainer.getX() + manaContainer.getWidth()/10 * i,
+                    manaContainer.getY(),
+                    manaContainer.getHeight(),
+                    manaContainer.getHeight());
+
+            g2d.setColor(Color.blue);
+            g2d.fill(spendManaCrystal);
+            g2d.setColor(Color.black);
+            g2d.draw(spendManaCrystal);
+            i++;
+
+        }
+
+        //draw opponent mana
+        Rectangle2D opponentManaContainer = new Rectangle2D.Double(
+                this.canvas.getWidth()*0.6,
+                this.canvas.getHeight()*0.03,
+                this.canvas.getWidth()*0.35,
+                this.canvas.getHeight()*0.06);
+
+        g2d.setColor(Color.black);
+        g2d.draw(opponentManaContainer);
+
+        int i2 = 0;
+        for (int j = 0 ; j < this.game.getOpponent().getMana(); j++){
+            Ellipse2D manaCrystal = new Ellipse2D.Double(
+                    opponentManaContainer.getX() + opponentManaContainer.getWidth()/10 *i2,
+                    opponentManaContainer.getY(),
+                    opponentManaContainer.getHeight(),
+                    opponentManaContainer.getHeight());
+
+            g2d.setColor(Color.cyan);
+            g2d.fill(manaCrystal);
+            g2d.setColor(Color.black);
+            g2d.draw(manaCrystal);
+            i2++;
+        }
+
+        for (int j = 0; j < this.game.getOpponent().getTotalMana()-this.game.getOpponent().getMana(); j++) {
+            Ellipse2D spendManaCrystal = new Ellipse2D.Double(
+                    opponentManaContainer.getX() + opponentManaContainer.getWidth()/10 * i2,
+                    opponentManaContainer.getY(),
+                    opponentManaContainer.getHeight(),
+                    opponentManaContainer.getHeight());
+
+            g2d.setColor(Color.blue);
+            g2d.fill(spendManaCrystal);
+            g2d.setColor(Color.black);
+            g2d.draw(spendManaCrystal);
+            i2++;
+        }
     }
 }

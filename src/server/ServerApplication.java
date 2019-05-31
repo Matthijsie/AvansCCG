@@ -1,7 +1,5 @@
 package server;
 
-import server.Server;
-
 public class ServerApplication {
 
     public static void main(String[] args) {
