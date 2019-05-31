@@ -316,5 +316,74 @@ public class ClientApplication extends Application {
 
         g2d.setColor(Color.black);
         g2d.draw(manaContainer);
+
+        int i = 0;
+        for (int j = 0 ; j < this.game.getMyPlayer().getMana(); j++){
+            Ellipse2D manaCrystal = new Ellipse2D.Double(
+                    manaContainer.getX() + manaContainer.getWidth()/10 *i,
+                    manaContainer.getY(),
+                    manaContainer.getHeight(),
+                    manaContainer.getHeight());
+
+            g2d.setColor(Color.cyan);
+            g2d.fill(manaCrystal);
+            g2d.setColor(Color.black);
+            g2d.draw(manaCrystal);
+            i++;
+        }
+
+        for (int j = 0; j < this.game.getMyPlayer().getTotalMana()-this.game.getMyPlayer().getMana(); j++) {
+            Ellipse2D spendManaCrystal = new Ellipse2D.Double(
+                    manaContainer.getX() + manaContainer.getWidth()/10 * i,
+                    manaContainer.getY(),
+                    manaContainer.getHeight(),
+                    manaContainer.getHeight());
+
+            g2d.setColor(Color.blue);
+            g2d.fill(spendManaCrystal);
+            g2d.setColor(Color.black);
+            g2d.draw(spendManaCrystal);
+            i++;
+
+        }
+
+        //draw opponent mana
+        Rectangle2D opponentManaContainer = new Rectangle2D.Double(
+                this.canvas.getWidth()*0.6,
+                this.canvas.getHeight()*0.03,
+                this.canvas.getWidth()*0.35,
+                this.canvas.getHeight()*0.05);
+
+        g2d.setColor(Color.black);
+        g2d.draw(opponentManaContainer);
+
+        int i2 = 0;
+        for (int j = 0 ; j < this.game.getOpponent().getMana(); j++){
+            Ellipse2D manaCrystal = new Ellipse2D.Double(
+                    opponentManaContainer.getX() + opponentManaContainer.getWidth()/10 *i2,
+                    opponentManaContainer.getY(),
+                    opponentManaContainer.getHeight(),
+                    opponentManaContainer.getHeight());
+
+            g2d.setColor(Color.cyan);
+            g2d.fill(manaCrystal);
+            g2d.setColor(Color.black);
+            g2d.draw(manaCrystal);
+            i2++;
+        }
+
+        for (int j = 0; j < this.game.getOpponent().getTotalMana()-this.game.getOpponent().getMana(); j++) {
+            Ellipse2D spendManaCrystal = new Ellipse2D.Double(
+                    opponentManaContainer.getX() + opponentManaContainer.getWidth()/10 * i2,
+                    opponentManaContainer.getY(),
+                    opponentManaContainer.getHeight(),
+                    opponentManaContainer.getHeight());
+
+            g2d.setColor(Color.blue);
+            g2d.fill(spendManaCrystal);
+            g2d.setColor(Color.black);
+            g2d.draw(spendManaCrystal);
+            i2++;
+        }
     }
 }

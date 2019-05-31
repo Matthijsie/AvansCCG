@@ -85,7 +85,8 @@ public class Session implements Runnable {
         testBoard.add(new Minion(0,6,6,"",""));
         testBoard.add(new Minion(0,7,7,"",""));
 
-        MyPlayer firstPlayerView = new MyPlayer(new Board(testBoard, 7), new Hand(10), deckPlayer1, 30, 0, Color.red, 0, true);
+        //todo set totalmana and mana back to 0 when games can be played
+        MyPlayer firstPlayerView = new MyPlayer(new Board(testBoard, 7), new Hand(10), deckPlayer1, 30, 5, Color.red, 7, true);
         firstPlayerView.drawFromDeckToHand(3);
 
         //player 2
