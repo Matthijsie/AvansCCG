@@ -87,6 +87,10 @@ public class MyPlayer implements Serializable {
         }
     }
 
+    public void subtractHealth(int amount){
+        this.health -= amount;
+    }
+
     @Override
     public String toString() {
         return "MyPlayer{" +

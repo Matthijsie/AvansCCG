@@ -1,6 +1,7 @@
 package client;
 
 import client.actionObjects.AttackMinion;
+import client.actionObjects.AttackOpponent;
 import client.actionObjects.EndTurn;
 import client.actionObjects.PlayCard;
 import javafx.animation.AnimationTimer;
@@ -36,6 +37,7 @@ public class ClientApplication extends Application {
     private TextField chatInput;
     private Game game;
     private Rectangle2D endTurnButton;
+    private Rectangle2D opponentPortrait;
 
     public static void main(String[] args) {
         launch(ClientApplication.class);
@@ -180,12 +182,18 @@ public class ClientApplication extends Application {
             for (Minion minion : this.game.getOpponent().getCardsOnEnemyBoard()){
                 if (minion.getShape().contains(mousePosition)){
                     if (this.game.getMyPlayer().getBoard().hasMinionSelected()){
-                        System.out.println("Attacking: " + minion + " with: " + this.game.getMyPlayer().getBoard().getSelectedMinion());
                         this.client.writeObject(new AttackMinion(i, this.game.getMyPlayer().getBoard().getSelectedMinionIndex()));
                         return true;
                     }
                 }
                 i++;
+            }
+
+            if (this.opponentPortrait.contains(mousePosition)){
+                if (this.game.getMyPlayer().getBoard().hasMinionSelected()){
+                    this.client.writeObject(new AttackOpponent(this.game.getMyPlayer().getBoard().getSelectedMinionIndex()));
+                    return true;
+                }
             }
         }
 
@@ -218,6 +226,8 @@ public class ClientApplication extends Application {
     }
 
     private void drawPlayerPortraits(FXGraphics2D g2d){
+
+        //drawing my portrait
         Rectangle2D myPlayerPortrait = new Rectangle2D.Double(this.canvas.getWidth()*0.45,
                 this.canvas.getHeight()*0.75,
                 this.canvas.getWidth()*0.1,
@@ -226,13 +236,6 @@ public class ClientApplication extends Application {
         g2d.setColor(this.game.getMyPlayer().getPlayerColor());
         g2d.fill(myPlayerPortrait);
 
-        Rectangle2D opponentPortrait = new Rectangle2D.Double(this.canvas.getWidth()*0.45,
-                this.canvas.getHeight()*0.05,
-                this.canvas.getWidth()*0.1,
-                this.canvas.getHeight()*0.2);
-
-        g2d.setColor(this.game.getOpponent().getColor());
-        g2d.fill(opponentPortrait);
 
         Ellipse2D healthContainer1 = new Ellipse2D.Double(myPlayerPortrait.getX() + myPlayerPortrait.getWidth()*0.3,
                 myPlayerPortrait.getY() - myPlayerPortrait.getHeight()*0.2,
@@ -241,12 +244,23 @@ public class ClientApplication extends Application {
         g2d.setColor(Color.white);
         g2d.fill(healthContainer1);
 
+        //drawing opponent portrait
+        Rectangle2D opponentPortrait = new Rectangle2D.Double(this.canvas.getWidth()*0.45,
+                this.canvas.getHeight()*0.05,
+                this.canvas.getWidth()*0.1,
+                this.canvas.getHeight()*0.2);
+        this.opponentPortrait = opponentPortrait;
+
+        g2d.setColor(this.game.getOpponent().getColor());
+        g2d.fill(opponentPortrait);
+
         Ellipse2D healthContainer2 = new Ellipse2D.Double(opponentPortrait.getX() + opponentPortrait.getWidth()*0.3,
                 opponentPortrait.getY() + opponentPortrait.getHeight()*0.8,
                 opponentPortrait.getWidth()*0.4,
                 opponentPortrait.getWidth()*0.4);
         g2d.fill(healthContainer2);
 
+        //drawing strings
         g2d.setColor(Color.black);
         g2d.drawString(String.valueOf(this.game.getMyPlayer().getHealth()), (int)healthContainer1.getCenterX(), (int)healthContainer1.getCenterY());
         g2d.draw(myPlayerPortrait);

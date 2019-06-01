@@ -6,13 +6,13 @@ import java.io.Serializable;
 
 public class AttackOpponent implements Serializable {
 
-    private Minion attackingMinion;
+    private int attackingMinionIndex;
 
-    public AttackOpponent(Minion attackingMinion){
-        this.attackingMinion = attackingMinion;
+    public AttackOpponent(int attackingMinionIndex){
+        this.attackingMinionIndex = attackingMinionIndex;
     }
 
-    public Minion getAttackingMinion() {
-        return attackingMinion;
+    public int getAttackingMinionIndex() {
+        return attackingMinionIndex;
     }
 }
