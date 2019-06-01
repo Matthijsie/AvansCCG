@@ -94,7 +94,11 @@ public class Minion extends Card {
 
     //todo optimize this draw method as well
     public void drawOnBoard(FXGraphics2D g2d, Point2D position, ResizableCanvas canvas){
-        if (this.selectedOnBoard){
+        if (!this.canAttack){
+            g2d.setColor(Color.cyan);
+            Rectangle2D cannotAttackRectangle = new Rectangle2D.Double(position.getX()-3, position.getY()-3, canvas.getWidth()*0.07+6, canvas.getHeight()*0.15+6);
+            g2d.fill(cannotAttackRectangle);
+        } else if (this.selectedOnBoard){
             g2d.setColor(Color.red);
             Rectangle2D selectedRectangle = new Rectangle2D.Double(position.getX()-3, position.getY()-3, canvas.getWidth()*0.07+6, canvas.getHeight()*0.15+6);
             g2d.fill(selectedRectangle);

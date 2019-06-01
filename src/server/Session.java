@@ -215,6 +215,7 @@ public class Session implements Runnable {
                 this.player2Game.getMyPlayer().refreshMana();
 
                 this.player2Game.getMyPlayer().drawFromDeckToHand(1);
+                this.player2Game.getMyPlayer().getBoard().setAllMinionsCanAttack();
                 updateAllClientGames();
             }
         }else if(playerNumber == 2){
@@ -226,6 +227,7 @@ public class Session implements Runnable {
                 this.player1Game.getMyPlayer().refreshMana();
 
                 this.player1Game.getMyPlayer().drawFromDeckToHand(1);
+                this.player1Game.getMyPlayer().getBoard().setAllMinionsCanAttack();
                 updateAllClientGames();
             }
         }else {
@@ -242,7 +244,7 @@ public class Session implements Runnable {
 
             if (this.player1Game.getMyPlayer().getBoard().getMinions().get(attackingMinionIndex) != null){
                 Minion attackingMinion = this.player1Game.getMyPlayer().getBoard().getMinions().get(attackingMinionIndex);
-                if (this.player2Game.getMyPlayer().getBoard().getMinions().get(attackedMinionIndex) != null){
+                if (this.player2Game.getMyPlayer().getBoard().getMinions().get(attackedMinionIndex) != null && attackingMinion.canAttack()){
                     Minion attackedMinion = this.player2Game.getMyPlayer().getBoard().getMinions().get(attackedMinionIndex);
 
                     attackingMinion.subtractHealth(attackedMinion.getAttack());
@@ -262,7 +264,7 @@ public class Session implements Runnable {
 
             if (this.player2Game.getMyPlayer().getBoard().getMinions().get(attackingMinionIndex) != null){
                 Minion attackingMinion = this.player2Game.getMyPlayer().getBoard().getMinions().get(attackingMinionIndex);
-                if (this.player1Game.getMyPlayer().getBoard().getMinions().get(attackedMinionIndex) != null){
+                if (this.player1Game.getMyPlayer().getBoard().getMinions().get(attackedMinionIndex) != null && attackingMinion.canAttack()){
                     Minion attackedMinion = this.player1Game.getMyPlayer().getBoard().getMinions().get(attackedMinionIndex);
 
                     attackingMinion.subtractHealth(attackedMinion.getAttack());
