@@ -1,5 +1,7 @@
 package server;
 
+import server.game.Game;
+
 import java.io.*;
 import java.net.Socket;
 
@@ -30,8 +32,9 @@ public class ServerClient implements Runnable {
 
     public void writeObject(Object object){
         try {
+
             this.outO.writeObject(object);
-            this.outO.flush();
+            this.outO.reset();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -61,7 +64,6 @@ public class ServerClient implements Runnable {
                         Object object = this.inO.readObject();
 
                         this.session.objectReceived(object, this);
-
 
                     } catch (IOException | ClassNotFoundException e) {
                         e.printStackTrace();

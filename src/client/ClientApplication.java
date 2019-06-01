@@ -1,5 +1,6 @@
 package client;
 
+import client.actionObjects.EndTurn;
 import client.actionObjects.PlayCard;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
@@ -34,7 +35,6 @@ public class ClientApplication extends Application {
     private TextField chatInput;
     private Game game;
     private Rectangle2D endTurnButton;
-    private FXGraphics2D g2d;
 
     public static void main(String[] args) {
         launch(ClientApplication.class);
@@ -72,7 +72,7 @@ public class ClientApplication extends Application {
         chatContainer.setBottom(this.chatInput);
         mainPane.setRight(chatContainer);
 
-        this.g2d = new FXGraphics2D(this.canvas.getGraphicsContext2D());
+        FXGraphics2D g2d = new FXGraphics2D(this.canvas.getGraphicsContext2D());
         new AnimationTimer() {
             long last = -1;
             @Override
@@ -121,12 +121,8 @@ public class ClientApplication extends Application {
         g2d.setColor(Color.white);
         g2d.fill(screen);
 
-        //todo: draw the button only after the game has started and add "end turn" text
-        g2d.setColor(Color.black);
-        this.endTurnButton = new Rectangle2D.Double(canvas.getWidth()*0.90, canvas.getHeight()*0.47, canvas.getWidth()*0.10, canvas.getHeight()*0.06);
-        g2d.draw(this.endTurnButton);
-
         if (this.game != null){
+            drawEndRunButton(g2d);
             drawPlayerPortraits(g2d);
             drawDecks(g2d);
             drawHands(g2d);
@@ -144,7 +140,9 @@ public class ClientApplication extends Application {
         Point2D mousePosition = new Point2D.Double(e.getX(), e.getY());
 
         if(this.endTurnButton.contains(mousePosition)) {
-            System.out.println("pressed end turn button");
+            if (this.game.getMyPlayer().isMyTurn()){
+                this.client.writeObject(new EndTurn());
+            }
         }
 
         for (Card card : this.game.getMyPlayer().getHand().getCards()){
@@ -179,7 +177,6 @@ public class ClientApplication extends Application {
 
     public void setGame(Game game){
         this.game = game;
-        draw(this.g2d);
     }
 
     private void drawPlayerPortraits(FXGraphics2D g2d){
@@ -316,6 +313,7 @@ public class ClientApplication extends Application {
         }
     }
 
+    //todo optimize setColor()
     private void drawMana(FXGraphics2D g2d){
 
         //draw my mana
@@ -396,5 +394,23 @@ public class ClientApplication extends Application {
             g2d.draw(spendManaCrystal);
             i++;
         }
+    }
+
+    private void drawEndRunButton(FXGraphics2D g2d){
+        this.endTurnButton = new Rectangle2D.Double(canvas.getWidth()*0.90, canvas.getHeight()*0.47, canvas.getWidth()*0.10, canvas.getHeight()*0.06);
+
+        if (this.game.getMyPlayer().isMyTurn()){
+            g2d.setColor(Color.green);
+        }else {
+            g2d.setColor(Color.yellow);
+        }
+
+        g2d.fill(this.endTurnButton);
+        g2d.setColor(Color.black);
+        g2d.draw(this.endTurnButton);
+        g2d.drawString(
+                "End turn",
+                (int)(this.endTurnButton.getX()+this.endTurnButton.getWidth()*0.2),
+                (int)(this.endTurnButton.getY() + this.endTurnButton.getHeight()*0.6));
     }
 }

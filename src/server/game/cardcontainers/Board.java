@@ -38,4 +38,8 @@ public class Board implements Serializable {
             this.minions.add(minion);
         }
     }
+
+    public String toString(){
+        return "Amount of minions: " + this.minions.size();
+    }
 }

@@ -23,4 +23,11 @@ public class Game implements Serializable {
     public void setOpponent(Opponent opponent){
         this.opponent = opponent;
     }
+
+    @Override
+    public String toString() {
+        return "Game{" +
+                "myPlayer=" + myPlayer +
+                '}';
+    }
 }

@@ -1,5 +1,6 @@
 package server;
 
+import client.actionObjects.EndTurn;
 import client.actionObjects.PlayCard;
 import server.game.Game;
 import server.game.MyPlayer;
@@ -145,22 +146,26 @@ public class Session implements Runnable {
         this.gameHasStarted = true;
     }
 
-    //todo remove game received and add logic for all action objects received
+    //todo add logic for all action objects received
     public void objectReceived(Object object, ServerClient sender){
         int playerNumber = sender.getPlayerNumber();
 
-        if (object.getClass().equals(PlayCard.class)) {
+        if (object.getClass().equals(PlayCard.class)) {         //handles card played
             System.out.println("received playCard Object");
             handleCardPlayed((PlayCard)object, playerNumber);
 
-        }else if (object.getClass().equals(String.class)){
+        }else if (object.getClass().equals(String.class)){      //handles message sent
             String message = (String) object;
             System.out.println("client send message: " + message);
             sendToAllClients("(" + sender.getName() + ") " + message);
+
+        }else if (object.getClass().equals(EndTurn.class)){     //handles end of turn
+            System.out.println("received EndTurn Object");
+            handleEndTurn(playerNumber);
         }
     }
 
-    //todo look at card logic
+    //todo optimize logic
     private void handleCardPlayed(PlayCard cardPlayed, int playerNumber){
         Card playedCard = cardPlayed.getCard();
 
@@ -183,6 +188,23 @@ public class Session implements Runnable {
         }else {
             System.out.println("Error: Unknown Player number");
         }
+    }
 
+    private void handleEndTurn(int playerNumber){
+        if (playerNumber == 1){
+            if (this.player1Game.getMyPlayer().isMyTurn()){
+                this.player1Game.getMyPlayer().setMyTurn(false);
+                this.player2Game.getMyPlayer().setMyTurn(true);
+                updateAllClientGames();
+            }
+        }else if(playerNumber == 2){
+            if (this.player2Game.getMyPlayer().isMyTurn()){
+                this.player1Game.getMyPlayer().setMyTurn(true);
+                this.player2Game.getMyPlayer().setMyTurn(false);
+                updateAllClientGames();
+            }
+        }else {
+            System.out.println("Error: Unknown Player number");
+        }
     }
 }
