@@ -106,6 +106,10 @@ public class MyPlayer implements Serializable {
         }
     }
 
+    public void subtractMana(int amount){
+        this.mana -= amount;
+    }
+
     public void refreshMana(){
         this.mana = this.totalMana;
     }

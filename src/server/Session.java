@@ -92,21 +92,21 @@ public class Session implements Runnable {
         //=============setting information players know themselves===========================
         //player 1
         LinkedList<Card> cardsPlayer1 = new LinkedList<>();
-        for (int i = 0; i < 15; i++){
-            cardsPlayer1.add(new Minion(0,0,0,"DummyPlayer1", ""));
-            cardsPlayer1.add(new Minion(10, 10, 10, "SecondDummy", ""));
+        for (int i = 1; i < 10; i++){
+            cardsPlayer1.add(new Minion(i,i,i,"DummyPlayer1", ""));
+            cardsPlayer1.add(new Minion(i, i, i, "SecondDummy", ""));
         }
         Deck deckPlayer1 = new Deck(cardsPlayer1);
         Collections.shuffle(deckPlayer1.getCards());
 
-        MyPlayer firstPlayerView = new MyPlayer(new Board(7), new Hand(10), deckPlayer1, 30, 0, Color.red, 0, true);
+        MyPlayer firstPlayerView = new MyPlayer(new Board(7), new Hand(10), deckPlayer1, 30, 1, Color.red, 1, true);
         firstPlayerView.drawFromDeckToHand(3);
 
         //player 2
         LinkedList<Card> cardsPlayer2 = new LinkedList<>();
-        for (int i = 0; i < 15; i++){
-            cardsPlayer2.add(new Minion(0,0,0,"DummyPlayer2", ""));
-            cardsPlayer2.add(new Minion(10, 10, 10, "AnotherDummy", ""));
+        for (int i = 1; i < 10; i++){
+            cardsPlayer2.add(new Minion(i,i,i,"DummyPlayer2", ""));
+            cardsPlayer2.add(new Minion(i, i, i, "AnotherDummy", ""));
         }
 
         Deck deckPlayer2 = new Deck(cardsPlayer2);
@@ -168,12 +168,14 @@ public class Session implements Runnable {
     //todo optimize logic
     private void handleCardPlayed(PlayCard cardPlayed, int playerNumber){
         Card playedCard = cardPlayed.getCard();
+        int positionInHand = cardPlayed.getPositionInHand();
 
         if (playerNumber == 1){
             if (this.player1Game.getMyPlayer().getHand().getCards().contains(playedCard)){
                 if (this.player1Game.getMyPlayer().getMana() >= playedCard.getCost() && !this.player1Game.getMyPlayer().getBoard().isFull()){
                     this.player1Game.getMyPlayer().getBoard().addMinion(playedCard);
-                    this.player1Game.getMyPlayer().getHand().getCards().remove(playedCard);
+                    this.player1Game.getMyPlayer().getHand().getCards().remove(positionInHand);
+                    this.player1Game.getMyPlayer().subtractMana(playedCard.getCost());
                     updateAllClientGames();
                 }
             }
@@ -181,7 +183,8 @@ public class Session implements Runnable {
             if (this.player2Game.getMyPlayer().getHand().getCards().contains(playedCard)) {
                 if (this.player2Game.getMyPlayer().getMana() >= playedCard.getCost() && !this.player2Game.getMyPlayer().getBoard().isFull()) {
                     this.player2Game.getMyPlayer().getBoard().addMinion(playedCard);
-                    this.player2Game.getMyPlayer().getHand().getCards().remove(playedCard);
+                    this.player2Game.getMyPlayer().getHand().getCards().remove(positionInHand);
+                    this.player2Game.getMyPlayer().subtractMana(playedCard.getCost());
                     updateAllClientGames();
                 }
             }
@@ -195,12 +198,22 @@ public class Session implements Runnable {
             if (this.player1Game.getMyPlayer().isMyTurn()){
                 this.player1Game.getMyPlayer().setMyTurn(false);
                 this.player2Game.getMyPlayer().setMyTurn(true);
+
+                this.player2Game.getMyPlayer().addMana();
+                this.player2Game.getMyPlayer().refreshMana();
+
+                this.player2Game.getMyPlayer().drawFromDeckToHand(1);
                 updateAllClientGames();
             }
         }else if(playerNumber == 2){
             if (this.player2Game.getMyPlayer().isMyTurn()){
                 this.player1Game.getMyPlayer().setMyTurn(true);
                 this.player2Game.getMyPlayer().setMyTurn(false);
+
+                this.player1Game.getMyPlayer().addMana();
+                this.player1Game.getMyPlayer().refreshMana();
+
+                this.player1Game.getMyPlayer().drawFromDeckToHand(1);
                 updateAllClientGames();
             }
         }else {

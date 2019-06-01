@@ -145,12 +145,14 @@ public class ClientApplication extends Application {
             }
         }
 
+        int i = 0;
         for (Card card : this.game.getMyPlayer().getHand().getCards()){
             if (card.getShape().contains(mousePosition)){
                 if (card.getCost() <= this.game.getMyPlayer().getMana() && this.game.getMyPlayer().getBoardSize() < 7){
-                    this.client.writeObject(new PlayCard(card));
+                    this.client.writeObject(new PlayCard(card, i));
                 }
             }
+            i++;
         }
     }
 
