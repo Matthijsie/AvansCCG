@@ -1,5 +1,7 @@
 package server;
 
+import client.actionObjects.AttackMinion;
+import client.actionObjects.AttackOpponent;
 import client.actionObjects.EndTurn;
 import client.actionObjects.PlayCard;
 import server.game.Game;
@@ -100,7 +102,7 @@ public class Session implements Runnable {
         Collections.shuffle(deckPlayer1.getCards());
 
         MyPlayer firstPlayerView = new MyPlayer(new Board(7), new Hand(10), deckPlayer1, 30, 1, Color.red, 1, true);
-        firstPlayerView.drawFromDeckToHand(3);
+        firstPlayerView.drawFromDeckToHand(4);
 
         //player 2
         LinkedList<Card> cardsPlayer2 = new LinkedList<>();
@@ -146,22 +148,32 @@ public class Session implements Runnable {
         this.gameHasStarted = true;
     }
 
-    //todo add logic for all action objects received
     public void objectReceived(Object object, ServerClient sender){
         int playerNumber = sender.getPlayerNumber();
 
-        if (object.getClass().equals(PlayCard.class)) {         //handles card played
+        if (object.getClass().equals(PlayCard.class)) {             //handles card played
             System.out.println("received playCard Object");
             handleCardPlayed((PlayCard)object, playerNumber);
 
-        }else if (object.getClass().equals(String.class)){      //handles message sent
+        }else if (object.getClass().equals(String.class)){          //handles message sent
             String message = (String) object;
             System.out.println("client send message: " + message);
             sendToAllClients("(" + sender.getName() + ") " + message);
 
-        }else if (object.getClass().equals(EndTurn.class)){     //handles end of turn
+        }else if (object.getClass().equals(EndTurn.class)){         //handles end of turn
             System.out.println("received EndTurn Object");
             handleEndTurn(playerNumber);
+
+        }else if (object.getClass().equals(AttackMinion.class)){    //handles minions attack each other
+            System.out.println("received AttackMinion Object");
+            handleAttackMinion((AttackMinion)object);
+
+        }else if (object.getClass().equals(AttackOpponent.class)){  //handles minion attacking opponent
+            System.out.println("received AttackOpponent Object");
+            handleAttackOpponent((AttackOpponent)object);
+
+        }else {                                                     //sends error if none of the above were found
+            System.out.println("Error: Unknown action Object");
         }
     }
 
@@ -219,5 +231,15 @@ public class Session implements Runnable {
         }else {
             System.out.println("Error: Unknown Player number");
         }
+    }
+
+    //todo implement method logic
+    private void handleAttackMinion(AttackMinion attackMinion){
+
+    }
+
+    //todo implement method logic
+    private void handleAttackOpponent(AttackOpponent attackOpponent){
+
     }
 }

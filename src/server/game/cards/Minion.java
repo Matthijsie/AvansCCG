@@ -13,6 +13,7 @@ public class Minion extends Card {
     private int attack;
     private int defense;
     private Shape shape;
+    private boolean selectedOnBoard;
 
     public Minion(int cost, int attack, int defense, String cardName, String cardText) {
         super(cost, cardName, cardText);
@@ -83,11 +84,21 @@ public class Minion extends Card {
 
     //todo optimize this draw method as well
     public void drawOnBoard(FXGraphics2D g2d, Point2D position, ResizableCanvas canvas){
+        if (this.selectedOnBoard){
+            g2d.setColor(Color.red);
+            Rectangle2D selectedRectangle = new Rectangle2D.Double(position.getX()-3, position.getY()-3, canvas.getWidth()*0.07+6, canvas.getHeight()*0.16+6);
+            g2d.fill(selectedRectangle);
+        }
+
         Rectangle2D baseRectangle = new Rectangle2D.Double(position.getX(), position.getY(), canvas.getWidth()*0.07, canvas.getHeight()*0.15);
         g2d.setColor(Color.white);
         g2d.fill(baseRectangle);
         g2d.setColor(Color.black);
         g2d.draw(baseRectangle);
+
+        this.shape = baseRectangle;
+
+
 
         Ellipse2D attackEllipse = new Ellipse2D.Double(
                 baseRectangle.getX(),
@@ -117,5 +128,13 @@ public class Minion extends Card {
 
     public Shape getShape(){
         return this.shape;
+    }
+
+    public boolean isSelectedOnBoard() {
+        return selectedOnBoard;
+    }
+
+    public void setSelectedOnBoard(boolean selectedOnBoard) {
+        this.selectedOnBoard = selectedOnBoard;
     }
 }

@@ -42,4 +42,10 @@ public class Board implements Serializable {
     public String toString(){
         return "Amount of minions: " + this.minions.size();
     }
+
+    public void deselectAllMinions(){
+        for (Minion minion : this.minions){
+            minion.setSelectedOnBoard(false);
+        }
+    }
 }

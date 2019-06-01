@@ -41,7 +41,7 @@ public class ClientApplication extends Application {
     }
 
     @Override
-    public void start(Stage stage) throws Exception {
+    public void start(Stage stage) {
         //============Login screen================
         BorderPane firstPane = new BorderPane();
         VBox loginBox = new VBox();
@@ -135,25 +135,46 @@ public class ClientApplication extends Application {
 
     }
 
-    //todo check if cards/minions/endturnbutton are pressed and send actionObjects to the server
-    private void onMousePressed(MouseEvent e){
+    //todo add function to select minions and attack targets
+    private boolean onMousePressed(MouseEvent e){
         Point2D mousePosition = new Point2D.Double(e.getX(), e.getY());
 
+        //checks if the end turn button has been pressed
         if(this.endTurnButton.contains(mousePosition)) {
             if (this.game.getMyPlayer().isMyTurn()){
                 this.client.writeObject(new EndTurn());
+                return true;
             }
         }
 
-        int i = 0;
-        for (Card card : this.game.getMyPlayer().getHand().getCards()){
-            if (card.getShape().contains(mousePosition)){
-                if (card.getCost() <= this.game.getMyPlayer().getMana() && this.game.getMyPlayer().getBoardSize() < 7 && this.game.getMyPlayer().isMyTurn()){
-                    this.client.writeObject(new PlayCard(card, i));
+        if (this.game.getMyPlayer().isMyTurn()) {
+
+            //checks if a card in hand has been pressed
+            int i = 0;
+            for (Card card : this.game.getMyPlayer().getHand().getCards()) {
+                if (card.getShape().contains(mousePosition)) {
+                    if (card.getCost() <= this.game.getMyPlayer().getMana() && this.game.getMyPlayer().getBoardSize() < 7 && this.game.getMyPlayer().isMyTurn()) {
+                        this.client.writeObject(new PlayCard(card, i));
+                        return true;
+                    }
+                }
+                i++;
+            }
+
+            //checks if a card on own board has been pressed
+            for (Minion minion : this.game.getMyPlayer().getBoard().getMinions()) {
+                if (minion.getShape().contains(mousePosition)) {
+                    if (!minion.isSelectedOnBoard()) {
+                        this.game.getMyPlayer().getBoard().deselectAllMinions();
+                        minion.setSelectedOnBoard(true);
+                    } else {
+                        minion.setSelectedOnBoard(false);
+                    }
+                    return true;
                 }
             }
-            i++;
         }
+        return false;
     }
 
     private void onMouseDragged(MouseEvent e){

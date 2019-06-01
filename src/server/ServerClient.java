@@ -71,17 +71,6 @@ public class ServerClient implements Runnable {
                 }
             }).start();
 
-//            new Thread(()->{
-//                while (true) {
-//                    try {
-//                        String message = this.in.readUTF();
-//                        handleMessage(message);
-//                    }catch (IOException e){
-//                        e.printStackTrace();
-//                    }
-//                }
-//            }).start();
-
         } catch (IOException e) {
             e.printStackTrace();
         }
