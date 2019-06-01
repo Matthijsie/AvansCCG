@@ -6,19 +6,19 @@ import java.io.Serializable;
 
 public class AttackMinion implements Serializable {
 
-    private Minion minionAttacked;
-    private Minion minionAttacking;
+    private int minionAttackingIndex;
+    private int minionAttackedIndex;
 
-    public AttackMinion(Minion minionAttacked, Minion minionAttacking){
-        this.minionAttacked = minionAttacked;
-        this.minionAttacking = minionAttacking;
+    public AttackMinion(int minionAttackedIndex, int minionAttackingIndex){
+        this.minionAttackedIndex = minionAttackedIndex;
+        this.minionAttackingIndex = minionAttackingIndex;
     }
 
-    public Minion getMinionAttacked() {
-        return minionAttacked;
+    public int getMinionAttackingIndex() {
+        return minionAttackingIndex;
     }
 
-    public Minion getMinionAttacking() {
-        return minionAttacking;
+    public int getMinionAttackedIndex() {
+        return minionAttackedIndex;
     }
 }

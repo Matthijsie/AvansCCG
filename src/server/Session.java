@@ -1,5 +1,7 @@
 package server;
 
+import client.actionObjects.AttackMinion;
+import client.actionObjects.AttackOpponent;
 import client.actionObjects.EndTurn;
 import client.actionObjects.PlayCard;
 import server.game.Game;
@@ -93,20 +95,20 @@ public class Session implements Runnable {
         //player 1
         LinkedList<Card> cardsPlayer1 = new LinkedList<>();
         for (int i = 1; i < 10; i++){
-            cardsPlayer1.add(new Minion(i,i,i,"DummyPlayer1", ""));
-            cardsPlayer1.add(new Minion(i, i, i, "SecondDummy", ""));
+            cardsPlayer1.add(new Minion(i,i,i,"DummyPlayer1", "", false));
+            cardsPlayer1.add(new Minion(i, i, i, "SecondDummy", "", false));
         }
         Deck deckPlayer1 = new Deck(cardsPlayer1);
         Collections.shuffle(deckPlayer1.getCards());
 
         MyPlayer firstPlayerView = new MyPlayer(new Board(7), new Hand(10), deckPlayer1, 30, 1, Color.red, 1, true);
-        firstPlayerView.drawFromDeckToHand(3);
+        firstPlayerView.drawFromDeckToHand(4);
 
         //player 2
         LinkedList<Card> cardsPlayer2 = new LinkedList<>();
         for (int i = 1; i < 10; i++){
-            cardsPlayer2.add(new Minion(i,i,i,"DummyPlayer2", ""));
-            cardsPlayer2.add(new Minion(i, i, i, "AnotherDummy", ""));
+            cardsPlayer2.add(new Minion(i,i,i,"DummyPlayer2", "", false));
+            cardsPlayer2.add(new Minion(i, i, i, "AnotherDummy", "", false));
         }
 
         Deck deckPlayer2 = new Deck(cardsPlayer2);
@@ -146,22 +148,32 @@ public class Session implements Runnable {
         this.gameHasStarted = true;
     }
 
-    //todo add logic for all action objects received
     public void objectReceived(Object object, ServerClient sender){
         int playerNumber = sender.getPlayerNumber();
 
-        if (object.getClass().equals(PlayCard.class)) {         //handles card played
+        if (object.getClass().equals(PlayCard.class)) {             //handles card played
             System.out.println("received playCard Object");
             handleCardPlayed((PlayCard)object, playerNumber);
 
-        }else if (object.getClass().equals(String.class)){      //handles message sent
+        }else if (object.getClass().equals(String.class)){          //handles message sent
             String message = (String) object;
             System.out.println("client send message: " + message);
             sendToAllClients("(" + sender.getName() + ") " + message);
 
-        }else if (object.getClass().equals(EndTurn.class)){     //handles end of turn
+        }else if (object.getClass().equals(EndTurn.class)){         //handles end of turn
             System.out.println("received EndTurn Object");
             handleEndTurn(playerNumber);
+
+        }else if (object.getClass().equals(AttackMinion.class)){    //handles minions attack each other
+            System.out.println("received AttackMinion Object");
+            handleAttackMinion((AttackMinion)object, playerNumber);
+
+        }else if (object.getClass().equals(AttackOpponent.class)){  //handles minion attacking opponent
+            System.out.println("received AttackOpponent Object");
+            handleAttackOpponent((AttackOpponent)object, playerNumber);
+
+        }else {                                                     //sends error if none of the above were found
+            System.out.println("Error: Unknown action Object");
         }
     }
 
@@ -203,6 +215,7 @@ public class Session implements Runnable {
                 this.player2Game.getMyPlayer().refreshMana();
 
                 this.player2Game.getMyPlayer().drawFromDeckToHand(1);
+                this.player2Game.getMyPlayer().getBoard().setAllMinionsCanAttack();
                 updateAllClientGames();
             }
         }else if(playerNumber == 2){
@@ -214,10 +227,95 @@ public class Session implements Runnable {
                 this.player1Game.getMyPlayer().refreshMana();
 
                 this.player1Game.getMyPlayer().drawFromDeckToHand(1);
+                this.player1Game.getMyPlayer().getBoard().setAllMinionsCanAttack();
                 updateAllClientGames();
             }
         }else {
             System.out.println("Error: Unknown Player number");
+        }
+    }
+
+    //todo implement method logic
+    private void handleAttackMinion(AttackMinion attackMinion, int playerNumber){
+        int attackingMinionIndex = attackMinion.getMinionAttackingIndex();
+        int attackedMinionIndex = attackMinion.getMinionAttackedIndex();
+
+        if (playerNumber == 1){
+
+            if (this.player1Game.getMyPlayer().getBoard().getMinions().get(attackingMinionIndex) != null){
+                Minion attackingMinion = this.player1Game.getMyPlayer().getBoard().getMinions().get(attackingMinionIndex);
+                if (this.player2Game.getMyPlayer().getBoard().getMinions().get(attackedMinionIndex) != null && attackingMinion.canAttack()){
+                    Minion attackedMinion = this.player2Game.getMyPlayer().getBoard().getMinions().get(attackedMinionIndex);
+
+                    attackingMinion.subtractHealth(attackedMinion.getAttack());
+                    attackingMinion.setCanAttack(false);
+                    attackedMinion.subtractHealth(attackingMinion.getAttack());
+
+                    if (attackingMinion.getDefense() <= 0){
+                        this.player1Game.getMyPlayer().getBoard().getMinions().remove(attackingMinionIndex);
+                    }
+                    if (attackedMinion.getDefense() <= 0){
+                        this.player2Game.getMyPlayer().getBoard().getMinions().remove(attackedMinionIndex);
+                    }
+                    updateAllClientGames();
+                }
+            }
+
+        }else if (playerNumber == 2){
+
+            if (this.player2Game.getMyPlayer().getBoard().getMinions().get(attackingMinionIndex) != null){
+                Minion attackingMinion = this.player2Game.getMyPlayer().getBoard().getMinions().get(attackingMinionIndex);
+                if (this.player1Game.getMyPlayer().getBoard().getMinions().get(attackedMinionIndex) != null && attackingMinion.canAttack()){
+                    Minion attackedMinion = this.player1Game.getMyPlayer().getBoard().getMinions().get(attackedMinionIndex);
+
+                    attackingMinion.subtractHealth(attackedMinion.getAttack());
+                    attackingMinion.setCanAttack(false);
+                    attackedMinion.subtractHealth(attackingMinion.getAttack());
+
+                    if (attackingMinion.getDefense() <= 0){
+                        this.player2Game.getMyPlayer().getBoard().getMinions().remove(attackingMinionIndex);
+                    }
+                    if (attackedMinion.getDefense() <= 0){
+                        this.player1Game.getMyPlayer().getBoard().getMinions().remove(attackedMinionIndex);
+                    }
+                    updateAllClientGames();
+                }
+            }
+
+        }else {
+            System.out.println("Error: Unknown player number");
+        }
+    }
+
+    //todo implement method logic
+    private void handleAttackOpponent(AttackOpponent attackOpponent, int playerNumber){
+        int attackingMinionIndex = attackOpponent.getAttackingMinionIndex();
+
+        if (playerNumber == 1){
+
+            if (this.player1Game.getMyPlayer().getBoard().getMinions().get(attackingMinionIndex) != null){
+                Minion attackingMinion = this.player1Game.getMyPlayer().getBoard().getMinions().get(attackingMinionIndex);
+
+                if (attackingMinion.canAttack()){
+                    this.player2Game.getMyPlayer().subtractHealth(attackingMinion.getAttack());
+                    attackingMinion.setCanAttack(false);
+                    updateAllClientGames();
+                }
+            }
+
+        }else if (playerNumber == 2){
+
+            if (this.player2Game.getMyPlayer().getBoard().getMinions().get(attackingMinionIndex) != null){
+                Minion attackingMinion = this.player2Game.getMyPlayer().getBoard().getMinions().get(attackingMinionIndex);
+                if (attackingMinion.canAttack()){
+                    this.player1Game.getMyPlayer().subtractHealth(attackingMinion.getAttack());
+                    attackingMinion.setCanAttack(false);
+                    updateAllClientGames();
+                }
+            }
+
+        }else {
+            System.out.println("Error: Unknown player number");
         }
     }
 }
