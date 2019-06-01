@@ -258,6 +258,8 @@ public class ClientApplication extends Application {
                 opponentPortrait.getY() + opponentPortrait.getHeight()*0.8,
                 opponentPortrait.getWidth()*0.4,
                 opponentPortrait.getWidth()*0.4);
+
+        g2d.setColor(Color.white);
         g2d.fill(healthContainer2);
 
         //drawing strings
