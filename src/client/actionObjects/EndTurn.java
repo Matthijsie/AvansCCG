@@ -1,6 +1,8 @@
 package client.actionObjects;
 
-public class EndTurn {
+import java.io.Serializable;
+
+public class EndTurn implements Serializable {
 
     public EndTurn(){
 

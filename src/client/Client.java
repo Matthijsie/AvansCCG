@@ -45,35 +45,22 @@ public class Client {
             this.name = name;
             this.out.writeUTF(this.name);
 
-            //Handling incoming messages
-//            new Thread ( () -> {
-//                while ( true ) {
-//                    try {
-//                        String message = this.in.readUTF();
-//                        System.out.println("Received Message: " + message);
-//
-//                        Platform.runLater( () -> this.gui.messageReceived(message));
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//            }).start();
-
             //Handling incoming game Objects
-
             new Thread( () -> {
                 while ( true ) {
                     try {
+
                         Object object = this.inO.readObject();
 
                         if (object.getClass().equals(Game.class)) {
-                            Game game = (Game) object;
-                            this.gui.setGame(game);
-                            System.out.println("received game");
+                            this.gui.setGame((Game)object);
+
                         }else if (object.getClass().equals(String.class)){
                             String message = (String) object;
 
                             Platform.runLater( () -> this.gui.messageReceived(message));
+                        }else {
+                            System.out.println("Error: unknown object received");
                         }
 
 

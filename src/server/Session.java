@@ -1,5 +1,7 @@
 package server;
 
+import client.actionObjects.EndTurn;
+import client.actionObjects.PlayCard;
 import server.game.Game;
 import server.game.MyPlayer;
 import server.game.Opponent;
@@ -48,8 +50,30 @@ public class Session implements Runnable {
     }
 
     private void updateAllClientGames(){
+
+        Opponent player1Opponent = new Opponent(
+                this.player2Game.getMyPlayer().getHandSize(),
+                this.player2Game.getMyPlayer().getDeckSize(),
+                this.player2Game.getMyPlayer().getBoard().getMinions(),
+                this.player2Game.getMyPlayer().getHealth(),
+                this.player2Game.getMyPlayer().getMana(),
+                this.player2Game.getMyPlayer().getPlayerColor(),
+                this.player2Game.getMyPlayer().getTotalMana());
+        this.player1Game.setOpponent(player1Opponent);
+
+        Opponent player2Opponent = new Opponent(
+                this.player1Game.getMyPlayer().getHandSize(),
+                this.player1Game.getMyPlayer().getDeckSize(),
+                this.player1Game.getMyPlayer().getBoard().getMinions(),
+                this.player1Game.getMyPlayer().getHealth(),
+                this.player1Game.getMyPlayer().getMana(),
+                this.player1Game.getMyPlayer().getPlayerColor(),
+                this.player1Game.getMyPlayer().getTotalMana());
+        this.player2Game.setOpponent(player2Opponent);
+
         this.player1.writeObject(this.player1Game);
         this.player2.writeObject(this.player2Game);
+        System.out.println("send game to all clients");
     }
 
     public void addPlayer1(ServerClient player1){
@@ -68,32 +92,21 @@ public class Session implements Runnable {
         //=============setting information players know themselves===========================
         //player 1
         LinkedList<Card> cardsPlayer1 = new LinkedList<>();
-        for (int i = 0; i < 15; i++){
-            cardsPlayer1.add(new Minion(0,0,0,"DummyPlayer1", ""));
-            cardsPlayer1.add(new Minion(10, 10, 10, "SecondDummy", ""));
+        for (int i = 1; i < 10; i++){
+            cardsPlayer1.add(new Minion(i,i,i,"DummyPlayer1", ""));
+            cardsPlayer1.add(new Minion(i, i, i, "SecondDummy", ""));
         }
         Deck deckPlayer1 = new Deck(cardsPlayer1);
         Collections.shuffle(deckPlayer1.getCards());
-        LinkedList<Minion> testBoard = new LinkedList<>();
 
-        //todo remove these add() functions when it's possible to play cards from hand
-        testBoard.add(new Minion(0,1,1,"",""));
-        testBoard.add(new Minion(0,2,2,"",""));
-        testBoard.add(new Minion(0,3,3,"",""));
-        testBoard.add(new Minion(0,4,4,"",""));
-        testBoard.add(new Minion(0,5,5,"",""));
-        testBoard.add(new Minion(0,6,6,"",""));
-        testBoard.add(new Minion(0,7,7,"",""));
-
-        //todo set totalmana and mana back to 0 when games can be played
-        MyPlayer firstPlayerView = new MyPlayer(new Board(testBoard, 7), new Hand(10), deckPlayer1, 30, 5, Color.red, 7, true);
+        MyPlayer firstPlayerView = new MyPlayer(new Board(7), new Hand(10), deckPlayer1, 30, 1, Color.red, 1, true);
         firstPlayerView.drawFromDeckToHand(3);
 
         //player 2
         LinkedList<Card> cardsPlayer2 = new LinkedList<>();
-        for (int i = 0; i < 15; i++){
-            cardsPlayer2.add(new Minion(0,0,0,"DummyPlayer2", ""));
-            cardsPlayer2.add(new Minion(10, 10, 10, "AnotherDummy", ""));
+        for (int i = 1; i < 10; i++){
+            cardsPlayer2.add(new Minion(i,i,i,"DummyPlayer2", ""));
+            cardsPlayer2.add(new Minion(i, i, i, "AnotherDummy", ""));
         }
 
         Deck deckPlayer2 = new Deck(cardsPlayer2);
@@ -133,17 +146,78 @@ public class Session implements Runnable {
         this.gameHasStarted = true;
     }
 
-    //todo remove game received and add logic for all action objects received
+    //todo add logic for all action objects received
     public void objectReceived(Object object, ServerClient sender){
-        if (object.getClass().equals(Game.class)) {
-            Game game = (Game) object;
+        int playerNumber = sender.getPlayerNumber();
 
-            updateAllClientGames();
+        if (object.getClass().equals(PlayCard.class)) {         //handles card played
+            System.out.println("received playCard Object");
+            handleCardPlayed((PlayCard)object, playerNumber);
 
-        }else if (object.getClass().equals(String.class)){
+        }else if (object.getClass().equals(String.class)){      //handles message sent
             String message = (String) object;
             System.out.println("client send message: " + message);
             sendToAllClients("(" + sender.getName() + ") " + message);
+
+        }else if (object.getClass().equals(EndTurn.class)){     //handles end of turn
+            System.out.println("received EndTurn Object");
+            handleEndTurn(playerNumber);
+        }
+    }
+
+    //todo optimize logic
+    private void handleCardPlayed(PlayCard cardPlayed, int playerNumber){
+        Card playedCard = cardPlayed.getCard();
+        int positionInHand = cardPlayed.getPositionInHand();
+
+        if (playerNumber == 1){
+            if (this.player1Game.getMyPlayer().getHand().getCards().contains(playedCard)){
+                if (this.player1Game.getMyPlayer().getMana() >= playedCard.getCost() && !this.player1Game.getMyPlayer().getBoard().isFull()){
+                    this.player1Game.getMyPlayer().getBoard().addMinion(playedCard);
+                    this.player1Game.getMyPlayer().getHand().getCards().remove(positionInHand);
+                    this.player1Game.getMyPlayer().subtractMana(playedCard.getCost());
+                    updateAllClientGames();
+                }
+            }
+        }else if (playerNumber == 2){
+            if (this.player2Game.getMyPlayer().getHand().getCards().contains(playedCard)) {
+                if (this.player2Game.getMyPlayer().getMana() >= playedCard.getCost() && !this.player2Game.getMyPlayer().getBoard().isFull()) {
+                    this.player2Game.getMyPlayer().getBoard().addMinion(playedCard);
+                    this.player2Game.getMyPlayer().getHand().getCards().remove(positionInHand);
+                    this.player2Game.getMyPlayer().subtractMana(playedCard.getCost());
+                    updateAllClientGames();
+                }
+            }
+        }else {
+            System.out.println("Error: Unknown Player number");
+        }
+    }
+
+    private void handleEndTurn(int playerNumber){
+        if (playerNumber == 1){
+            if (this.player1Game.getMyPlayer().isMyTurn()){
+                this.player1Game.getMyPlayer().setMyTurn(false);
+                this.player2Game.getMyPlayer().setMyTurn(true);
+
+                this.player2Game.getMyPlayer().addMana();
+                this.player2Game.getMyPlayer().refreshMana();
+
+                this.player2Game.getMyPlayer().drawFromDeckToHand(1);
+                updateAllClientGames();
+            }
+        }else if(playerNumber == 2){
+            if (this.player2Game.getMyPlayer().isMyTurn()){
+                this.player1Game.getMyPlayer().setMyTurn(true);
+                this.player2Game.getMyPlayer().setMyTurn(false);
+
+                this.player1Game.getMyPlayer().addMana();
+                this.player1Game.getMyPlayer().refreshMana();
+
+                this.player1Game.getMyPlayer().drawFromDeckToHand(1);
+                updateAllClientGames();
+            }
+        }else {
+            System.out.println("Error: Unknown Player number");
         }
     }
 }

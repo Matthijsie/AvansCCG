@@ -1,5 +1,7 @@
 package client;
 
+import client.actionObjects.EndTurn;
+import client.actionObjects.PlayCard;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.geometry.Insets;
@@ -119,12 +121,8 @@ public class ClientApplication extends Application {
         g2d.setColor(Color.white);
         g2d.fill(screen);
 
-        //todo: draw the button only after the game has started and add "end turn" text
-        g2d.setColor(Color.black);
-        this.endTurnButton = new Rectangle2D.Double(canvas.getWidth()*0.90, canvas.getHeight()*0.47, canvas.getWidth()*0.10, canvas.getHeight()*0.06);
-        g2d.draw(this.endTurnButton);
-
         if (this.game != null){
+            drawEndRunButton(g2d);
             drawPlayerPortraits(g2d);
             drawDecks(g2d);
             drawHands(g2d);
@@ -141,8 +139,20 @@ public class ClientApplication extends Application {
     private void onMousePressed(MouseEvent e){
         Point2D mousePosition = new Point2D.Double(e.getX(), e.getY());
 
-        if(this.endTurnButton.contains(mousePosition)){
-            System.out.println("pressed end turn button");
+        if(this.endTurnButton.contains(mousePosition)) {
+            if (this.game.getMyPlayer().isMyTurn()){
+                this.client.writeObject(new EndTurn());
+            }
+        }
+
+        int i = 0;
+        for (Card card : this.game.getMyPlayer().getHand().getCards()){
+            if (card.getShape().contains(mousePosition)){
+                if (card.getCost() <= this.game.getMyPlayer().getMana() && this.game.getMyPlayer().getBoardSize() < 7 && this.game.getMyPlayer().isMyTurn()){
+                    this.client.writeObject(new PlayCard(card, i));
+                }
+            }
+            i++;
         }
     }
 
@@ -255,7 +265,10 @@ public class ClientApplication extends Application {
         //drawing opponent's hand
         for (int j = 0; j < this.game.getOpponent().getCardAmountInHand(); j++){
             Rectangle2D card = new Rectangle2D.Double(this.canvas.getWidth()*0.07*j, 0, this.canvas.getWidth()*0.07, this.canvas.getHeight()*0.2);
+            g2d.setColor(Color.black);
             g2d.draw(card);
+            g2d.setColor(Color.white);
+            g2d.fill(card);
         }
     }
 
@@ -305,6 +318,7 @@ public class ClientApplication extends Application {
         }
     }
 
+    //todo optimize setColor()
     private void drawMana(FXGraphics2D g2d){
 
         //draw my mana
@@ -316,6 +330,8 @@ public class ClientApplication extends Application {
 
         g2d.setColor(Color.black);
         g2d.draw(manaContainer);
+        g2d.setColor(Color.white);
+        g2d.fill(manaContainer);
 
         int i = 0;
         for (int j = 0 ; j < this.game.getMyPlayer().getMana(); j++){
@@ -357,10 +373,10 @@ public class ClientApplication extends Application {
         g2d.setColor(Color.black);
         g2d.draw(opponentManaContainer);
 
-        int i2 = 0;
+        i = 0;
         for (int j = 0 ; j < this.game.getOpponent().getMana(); j++){
             Ellipse2D manaCrystal = new Ellipse2D.Double(
-                    opponentManaContainer.getX() + opponentManaContainer.getWidth()/10 *i2,
+                    opponentManaContainer.getX() + opponentManaContainer.getWidth()/10 *i,
                     opponentManaContainer.getY(),
                     opponentManaContainer.getHeight(),
                     opponentManaContainer.getHeight());
@@ -369,12 +385,12 @@ public class ClientApplication extends Application {
             g2d.fill(manaCrystal);
             g2d.setColor(Color.black);
             g2d.draw(manaCrystal);
-            i2++;
+            i++;
         }
 
         for (int j = 0; j < this.game.getOpponent().getTotalMana()-this.game.getOpponent().getMana(); j++) {
             Ellipse2D spendManaCrystal = new Ellipse2D.Double(
-                    opponentManaContainer.getX() + opponentManaContainer.getWidth()/10 * i2,
+                    opponentManaContainer.getX() + opponentManaContainer.getWidth()/10 * i,
                     opponentManaContainer.getY(),
                     opponentManaContainer.getHeight(),
                     opponentManaContainer.getHeight());
@@ -383,7 +399,25 @@ public class ClientApplication extends Application {
             g2d.fill(spendManaCrystal);
             g2d.setColor(Color.black);
             g2d.draw(spendManaCrystal);
-            i2++;
+            i++;
         }
+    }
+
+    private void drawEndRunButton(FXGraphics2D g2d){
+        this.endTurnButton = new Rectangle2D.Double(canvas.getWidth()*0.90, canvas.getHeight()*0.47, canvas.getWidth()*0.10, canvas.getHeight()*0.06);
+
+        if (this.game.getMyPlayer().isMyTurn()){
+            g2d.setColor(Color.green);
+        }else {
+            g2d.setColor(Color.yellow);
+        }
+
+        g2d.fill(this.endTurnButton);
+        g2d.setColor(Color.black);
+        g2d.draw(this.endTurnButton);
+        g2d.drawString(
+                "End turn",
+                (int)(this.endTurnButton.getX()+this.endTurnButton.getWidth()*0.2),
+                (int)(this.endTurnButton.getY() + this.endTurnButton.getHeight()*0.6));
     }
 }

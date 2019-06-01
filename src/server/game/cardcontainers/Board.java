@@ -1,5 +1,6 @@
 package server.game.cardcontainers;
 
+import server.game.cards.Card;
 import server.game.cards.Minion;
 
 import java.io.Serializable;
@@ -25,5 +26,20 @@ public class Board implements Serializable {
 
     public int getMaxSize(){
         return this.maxSize;
+    }
+
+    public boolean isFull(){
+        return this.minions.size() >= this.maxSize;
+    }
+
+    public void addMinion(Card card){
+        if (card.getClass().equals(Minion.class)){
+            Minion minion = (Minion)card;
+            this.minions.add(minion);
+        }
+    }
+
+    public String toString(){
+        return "Amount of minions: " + this.minions.size();
     }
 }

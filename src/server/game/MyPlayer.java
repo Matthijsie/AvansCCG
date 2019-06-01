@@ -84,4 +84,33 @@ public class MyPlayer implements Serializable {
             }
         }
     }
+
+    @Override
+    public String toString() {
+        return "MyPlayer{" +
+                "board=" + board +
+                ", health=" + health +
+                ", mana=" + mana +
+                ", totalMana=" + totalMana +
+                ", myTurn=" + myTurn +
+                '}';
+    }
+
+    public void setMyTurn(boolean value){
+        this.myTurn = value;
+    }
+
+    public void addMana(){
+        if (this.totalMana < 10){
+            this.totalMana++;
+        }
+    }
+
+    public void subtractMana(int amount){
+        this.mana -= amount;
+    }
+
+    public void refreshMana(){
+        this.mana = this.totalMana;
+    }
 }
