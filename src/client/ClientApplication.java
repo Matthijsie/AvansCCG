@@ -148,7 +148,7 @@ public class ClientApplication extends Application {
         int i = 0;
         for (Card card : this.game.getMyPlayer().getHand().getCards()){
             if (card.getShape().contains(mousePosition)){
-                if (card.getCost() <= this.game.getMyPlayer().getMana() && this.game.getMyPlayer().getBoardSize() < 7){
+                if (card.getCost() <= this.game.getMyPlayer().getMana() && this.game.getMyPlayer().getBoardSize() < 7 && this.game.getMyPlayer().isMyTurn()){
                     this.client.writeObject(new PlayCard(card, i));
                 }
             }
@@ -265,7 +265,10 @@ public class ClientApplication extends Application {
         //drawing opponent's hand
         for (int j = 0; j < this.game.getOpponent().getCardAmountInHand(); j++){
             Rectangle2D card = new Rectangle2D.Double(this.canvas.getWidth()*0.07*j, 0, this.canvas.getWidth()*0.07, this.canvas.getHeight()*0.2);
+            g2d.setColor(Color.black);
             g2d.draw(card);
+            g2d.setColor(Color.white);
+            g2d.fill(card);
         }
     }
 
@@ -327,6 +330,8 @@ public class ClientApplication extends Application {
 
         g2d.setColor(Color.black);
         g2d.draw(manaContainer);
+        g2d.setColor(Color.white);
+        g2d.fill(manaContainer);
 
         int i = 0;
         for (int j = 0 ; j < this.game.getMyPlayer().getMana(); j++){

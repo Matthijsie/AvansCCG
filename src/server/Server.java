@@ -36,7 +36,7 @@ public class Server {
             this.serverThread = new Thread(()->{
                 Session session = null;
                 while ( true ) {
-//                    System.out.println("Waiting for clients to connect");
+                    System.out.println("Waiting for clients to connect");
 
                     try {
                         if (session == null || this.playerTypeTracker == 1){     //creates a new session if the last one was full
