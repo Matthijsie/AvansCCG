@@ -1,5 +1,6 @@
 package client;
 
+import client.actionObjects.AttackMinion;
 import client.actionObjects.EndTurn;
 import client.actionObjects.PlayCard;
 import javafx.animation.AnimationTimer;
@@ -139,21 +140,19 @@ public class ClientApplication extends Application {
     private boolean onMousePressed(MouseEvent e){
         Point2D mousePosition = new Point2D.Double(e.getX(), e.getY());
 
-        //checks if the end turn button has been pressed
-        if(this.endTurnButton.contains(mousePosition)) {
-            if (this.game.getMyPlayer().isMyTurn()){
+        if (this.game.getMyPlayer().isMyTurn()) {
+
+            //checks if the end turn button has been pressed
+            if (this.endTurnButton.contains(mousePosition)) {
                 this.client.writeObject(new EndTurn());
                 return true;
             }
-        }
-
-        if (this.game.getMyPlayer().isMyTurn()) {
 
             //checks if a card in hand has been pressed
             int i = 0;
             for (Card card : this.game.getMyPlayer().getHand().getCards()) {
                 if (card.getShape().contains(mousePosition)) {
-                    if (card.getCost() <= this.game.getMyPlayer().getMana() && this.game.getMyPlayer().getBoardSize() < 7 && this.game.getMyPlayer().isMyTurn()) {
+                    if (card.getCost() <= this.game.getMyPlayer().getMana() && this.game.getMyPlayer().getBoardSize() < 7) {
                         this.client.writeObject(new PlayCard(card, i));
                         return true;
                     }
@@ -162,18 +161,34 @@ public class ClientApplication extends Application {
             }
 
             //checks if a card on own board has been pressed
+            i = 0;
             for (Minion minion : this.game.getMyPlayer().getBoard().getMinions()) {
                 if (minion.getShape().contains(mousePosition)) {
                     if (!minion.isSelectedOnBoard()) {
                         this.game.getMyPlayer().getBoard().deselectAllMinions();
+                        this.game.getMyPlayer().getBoard().setSelectedMinionIndex(i);
                         minion.setSelectedOnBoard(true);
                     } else {
                         minion.setSelectedOnBoard(false);
+                        this.game.getMyPlayer().getBoard().setSelectedMinionIndex(-1);
                     }
                     return true;
                 }
             }
+
+            i = 0;
+            for (Minion minion : this.game.getOpponent().getCardsOnEnemyBoard()){
+                if (minion.getShape().contains(mousePosition)){
+                    if (this.game.getMyPlayer().getBoard().hasMinionSelected()){
+                        System.out.println("Attacking: " + minion + " with: " + this.game.getMyPlayer().getBoard().getSelectedMinion());
+                        this.client.writeObject(new AttackMinion(i, this.game.getMyPlayer().getBoard().getSelectedMinionIndex()));
+                        return true;
+                    }
+                }
+                i++;
+            }
         }
+
         return false;
     }
 
@@ -296,26 +311,8 @@ public class ClientApplication extends Application {
     //todo make it so the minions get drawn relative to the board container rather than the canvas (need to change method drawOnBoard() in Minion as well)
     private void drawBoard(FXGraphics2D g2d){
 
-        //drawing my board
-        Rectangle2D myBoardContainer = new Rectangle2D.Double(
-                this.canvas.getWidth()*0.2,
-                this.canvas.getHeight()* 0.5,
-                this.canvas.getWidth()*0.6,
-                this.canvas.getHeight()*0.2);
-
-        g2d.setColor(Color.pink);
-        g2d.fill(myBoardContainer);
-        g2d.setColor(Color.black);
-        g2d.draw(myBoardContainer);
-
-        //drawing the cards on my board
-        for(int i = 0; i < this.game.getMyPlayer().getBoardSize(); i++){
-            Minion minion = this.game.getMyPlayer().getBoard().getMinions().get(i);
-            minion.drawOnBoard(
-                    g2d,
-                    new Point2D.Double(this.canvas.getWidth()*0.21 + this.canvas.getWidth()*0.08*i, this.canvas.getHeight()*0.52),
-                    this.canvas);
-        }
+        //draw my board
+        this.game.getMyPlayer().getBoard().drawBoard(g2d, this.canvas);
 
         //drawing opponent's board
         Rectangle2D opponentBoardContainer = new Rectangle2D.Double(

@@ -14,11 +14,21 @@ public class Minion extends Card {
     private int defense;
     private Shape shape;
     private boolean selectedOnBoard;
+    private boolean canAttack;
 
-    public Minion(int cost, int attack, int defense, String cardName, String cardText) {
+    public Minion(int cost, int attack, int defense, String cardName, String cardText, boolean canAttack) {
         super(cost, cardName, cardText);
         this.attack = attack;
         this.defense = defense;
+        this.canAttack = false;
+    }
+
+    public boolean canAttack() {
+        return canAttack;
+    }
+
+    public void setCanAttack(boolean canAttack) {
+        this.canAttack = canAttack;
     }
 
     //todo optimize draw method
@@ -86,7 +96,7 @@ public class Minion extends Card {
     public void drawOnBoard(FXGraphics2D g2d, Point2D position, ResizableCanvas canvas){
         if (this.selectedOnBoard){
             g2d.setColor(Color.red);
-            Rectangle2D selectedRectangle = new Rectangle2D.Double(position.getX()-3, position.getY()-3, canvas.getWidth()*0.07+6, canvas.getHeight()*0.16+6);
+            Rectangle2D selectedRectangle = new Rectangle2D.Double(position.getX()-3, position.getY()-3, canvas.getWidth()*0.07+6, canvas.getHeight()*0.15+6);
             g2d.fill(selectedRectangle);
         }
 
@@ -97,8 +107,6 @@ public class Minion extends Card {
         g2d.draw(baseRectangle);
 
         this.shape = baseRectangle;
-
-
 
         Ellipse2D attackEllipse = new Ellipse2D.Double(
                 baseRectangle.getX(),
@@ -136,5 +144,27 @@ public class Minion extends Card {
 
     public void setSelectedOnBoard(boolean selectedOnBoard) {
         this.selectedOnBoard = selectedOnBoard;
+    }
+
+    public void subtractHealth(int amount){
+        this.defense -= amount;
+    }
+
+    public int getAttack(){
+        return this.attack;
+    }
+
+    public int getDefense(){
+        return this.defense;
+    }
+
+    @Override
+    public String toString() {
+        return "Minion{" +
+                "attack=" + attack +
+                ", defense=" + defense +
+                ", cost=" + cost +
+                ", cardName='" + cardName + '\'' +
+                '}';
     }
 }

@@ -76,11 +76,13 @@ public class MyPlayer implements Serializable {
 
     public void drawFromDeckToHand(int amount) {
         for (int i = 0; i < amount; i++) {
-            Card drawnCard = this.deck.getCards().getFirst();
-            this.deck.getCards().removeFirst();
+            if (this.deck.getCards().size() > 0) {
+                Card drawnCard = this.deck.getCards().getFirst();
+                this.deck.getCards().removeFirst();
 
-            if (this.hand.getCards().size() + 1 <= 10) {
-                this.hand.getCards().add(drawnCard);
+                if (this.hand.getCards().size() + 1 <= 10) {
+                    this.hand.getCards().add(drawnCard);
+                }
             }
         }
     }
