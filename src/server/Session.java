@@ -296,6 +296,10 @@ public class Session implements Runnable {
 
                 if (attackingMinion.canAttack()){
                     this.player2Game.getMyPlayer().subtractHealth(attackingMinion.getAttack());
+
+                    if (this.player2Game.getMyPlayer().getHealth() <= 0){
+                        //todo implement logic for when game finishes
+                    }
                     attackingMinion.setCanAttack(false);
                     updateAllClientGames();
                 }
@@ -307,6 +311,10 @@ public class Session implements Runnable {
                 Minion attackingMinion = this.player2Game.getMyPlayer().getBoard().getMinions().get(attackingMinionIndex);
                 if (attackingMinion.canAttack()){
                     this.player1Game.getMyPlayer().subtractHealth(attackingMinion.getAttack());
+
+                    if(this.player1Game.getMyPlayer().getHealth() <= 0) {
+                        //todo implement logic for when game finishes
+                    }
                     attackingMinion.setCanAttack(false);
                     updateAllClientGames();
                 }

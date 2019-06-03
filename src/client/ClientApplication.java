@@ -152,49 +152,54 @@ public class ClientApplication extends Application {
                 }
 
                 //checks if a card in hand has been pressed
-                int i = 0;
-                for (Card card : this.game.getMyPlayer().getHand().getCards()) {
+                for (int i = 0; i < this.game.getMyPlayer().getHand().getCards().size(); i++) {
+                    Card card = this.game.getMyPlayer().getHand().getCards().get(i);
+
                     if (card.getShape().contains(mousePosition)) {
                         if (card.getCost() <= this.game.getMyPlayer().getMana() && this.game.getMyPlayer().getBoardSize() < 7) {
                             this.client.writeObject(new PlayCard(card, i));
                             return true;
                         }
                     }
-                    i++;
                 }
 
-                //checks if a card on own board has been pressed
-                i = 0;
-                for (Minion minion : this.game.getMyPlayer().getBoard().getMinions()) {
+                //selects card on own board if card is pressed
+                for (int i = 0; i < this.game.getMyPlayer().getBoard().getMinions().size(); i++) {
+                    Minion minion  = this.game.getMyPlayer().getBoard().getMinions().get(i);
+
                     if (minion.getShape().contains(mousePosition)) {
                         if (!minion.isSelectedOnBoard()) {
                             this.game.getMyPlayer().getBoard().deselectAllMinions();
                             this.game.getMyPlayer().getBoard().setSelectedMinionIndex(i);
                             minion.setSelectedOnBoard(true);
+
                         } else {
                             minion.setSelectedOnBoard(false);
                             this.game.getMyPlayer().getBoard().setSelectedMinionIndex(-1);
                         }
                         return true;
                     }
-                    i++;
                 }
 
-                i = 0;
-                for (Minion minion : this.game.getOpponent().getCardsOnEnemyBoard()) {
-                    if (minion.getShape().contains(mousePosition)) {
-                        if (this.game.getMyPlayer().getBoard().hasMinionSelected()) {
+                //Checks only for attack if an allied minion is selected
+                if (this.game.getMyPlayer().getBoard().hasMinionSelected()) {
+
+                    //checks if an opponent's minion is selected
+                    for (int i = 0; i < this.game.getOpponent().getCardsOnEnemyBoard().size(); i++) {
+                        Minion minion = this.game.getOpponent().getCardsOnEnemyBoard().get(i);
+
+                        if (minion.getShape().contains(mousePosition)) {
                             this.client.writeObject(new AttackMinion(i, this.game.getMyPlayer().getBoard().getSelectedMinionIndex()));
                             return true;
+
                         }
                     }
-                    i++;
-                }
 
-                if (this.opponentPortrait.contains(mousePosition)) {
-                    if (this.game.getMyPlayer().getBoard().hasMinionSelected()) {
+                    //checks if opponent's portrait is selected
+                    if (this.opponentPortrait.contains(mousePosition)) {
                         this.client.writeObject(new AttackOpponent(this.game.getMyPlayer().getBoard().getSelectedMinionIndex()));
                         return true;
+
                     }
                 }
             }
