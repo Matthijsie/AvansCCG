@@ -33,6 +33,8 @@ public class Server {
         try {
             this.serverSocket = new ServerSocket(this.port);
 
+            System.out.println("Server online!");
+
             this.serverThread = new Thread(()->{
                 Session session = null;
                 while ( true ) {

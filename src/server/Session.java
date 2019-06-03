@@ -235,7 +235,6 @@ public class Session implements Runnable {
         }
     }
 
-    //todo implement method logic
     private void handleAttackMinion(AttackMinion attackMinion, int playerNumber){
         int attackingMinionIndex = attackMinion.getMinionAttackingIndex();
         int attackedMinionIndex = attackMinion.getMinionAttackedIndex();
@@ -287,7 +286,6 @@ public class Session implements Runnable {
         }
     }
 
-    //todo implement method logic
     private void handleAttackOpponent(AttackOpponent attackOpponent, int playerNumber){
         int attackingMinionIndex = attackOpponent.getAttackingMinionIndex();
 
