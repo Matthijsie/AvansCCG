@@ -19,6 +19,7 @@ public class Client {
     private ObjectInputStream inO;
     private ObjectOutputStream outO;
     private ClientApplication gui;
+    private Thread inputThread;
 
     public Client(String host, int port, ClientApplication gui){
         this.host = host;
@@ -46,29 +47,35 @@ public class Client {
             this.out.writeUTF(this.name);
 
             //Handling incoming game Objects
-            new Thread( () -> {
+            this.inputThread = new Thread( () -> {
                 while ( true ) {
                     try {
+                        if (socket.isConnected()) {
+                            Object object = this.inO.readObject();
 
-                        Object object = this.inO.readObject();
+                            if (object.getClass().equals(Game.class)) {
+                                this.gui.setGame((Game) object);
 
-                        if (object.getClass().equals(Game.class)) {
-                            this.gui.setGame((Game)object);
+                            } else if (object.getClass().equals(String.class)) {
+                                String message = (String) object;
 
-                        }else if (object.getClass().equals(String.class)){
-                            String message = (String) object;
+                                Platform.runLater(() -> this.gui.messageReceived(message));
+                            } else {
+                                System.out.println("Error: unknown object received");
+                            }
 
-                            Platform.runLater( () -> this.gui.messageReceived(message));
                         }else {
-                            System.out.println("Error: unknown object received");
+                            break;
                         }
 
-
-                    } catch (IOException | ClassNotFoundException e) {
-                        e.printStackTrace();
-                    }
+                        } catch(IOException | ClassNotFoundException e){
+                            e.printStackTrace();
+                            break;
+                        }
                 }
-            }).start();
+            });
+
+            this.inputThread.start();
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -78,7 +85,7 @@ public class Client {
     //sends message to the server
     public void writeUTF(String text){
         try {
-                this.out.writeUTF(text);
+            this.out.writeUTF(text);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -87,6 +94,16 @@ public class Client {
     public void writeObject(Object object){
         try {
             this.outO.writeObject(object);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void closeSocket(){
+        try {
+            this.inputThread.stop();
+            this.socket.close();
+
         } catch (IOException e) {
             e.printStackTrace();
         }

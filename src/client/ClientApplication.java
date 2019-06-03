@@ -1,11 +1,10 @@
 package client;
 
-import client.actionObjects.AttackMinion;
-import client.actionObjects.AttackOpponent;
-import client.actionObjects.EndTurn;
-import client.actionObjects.PlayCard;
+import client.actionObjects.*;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -17,6 +16,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import org.jfree.fx.FXGraphics2D;
 import org.jfree.fx.ResizableCanvas;
 import server.game.Game;
@@ -114,6 +114,13 @@ public class ClientApplication extends Application {
 
         stage.setScene(new Scene(firstPane, 500, 500));
         stage.setTitle("Avans card game");
+
+        stage.setOnCloseRequest(event -> {
+            Platform.exit();
+            client.writeObject(new CloseConnection());
+            client.closeSocket();
+        });
+
         stage.show();
         draw(g2d);
 

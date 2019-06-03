@@ -33,6 +33,15 @@ public class Server {
         try {
             this.serverSocket = new ServerSocket(this.port);
 
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                try {
+                    serverSocket.close();
+                    System.out.println("Server is shut down");
+                }catch (IOException e){
+                    e.printStackTrace();
+                }
+            }));
+
             System.out.println("Server online!");
 
             this.serverThread = new Thread(()->{

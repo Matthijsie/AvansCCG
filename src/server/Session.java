@@ -1,9 +1,6 @@
 package server;
 
-import client.actionObjects.AttackMinion;
-import client.actionObjects.AttackOpponent;
-import client.actionObjects.EndTurn;
-import client.actionObjects.PlayCard;
+import client.actionObjects.*;
 import server.game.Game;
 import server.game.MyPlayer;
 import server.game.Opponent;
@@ -168,9 +165,13 @@ public class Session implements Runnable {
             System.out.println("received AttackMinion Object");
             handleAttackMinion((AttackMinion)object, playerNumber);
 
-        }else if (object.getClass().equals(AttackOpponent.class)){  //handles minion attacking opponent
+        }else if (object.getClass().equals(AttackOpponent.class)) {  //handles minion attacking opponent
             System.out.println("received AttackOpponent Object");
-            handleAttackOpponent((AttackOpponent)object, playerNumber);
+            handleAttackOpponent((AttackOpponent) object, playerNumber);
+
+        }else if (object.getClass().equals(CloseConnection.class)){
+            System.out.println("Closing connection with client");
+            handleCloseConnection(playerNumber);
 
         }else {                                                     //sends error if none of the above were found
             System.out.println("Error: Unknown action Object");
@@ -319,6 +320,16 @@ public class Session implements Runnable {
                     updateAllClientGames();
                 }
             }
+
+        }else {
+            System.out.println("Error: Unknown player number");
+        }
+    }
+
+    private void handleCloseConnection(int playerNumber){
+        if (playerNumber == 1){
+            this.player1.closeConnection();
+        }else if(playerNumber == 2){
 
         }else {
             System.out.println("Error: Unknown player number");

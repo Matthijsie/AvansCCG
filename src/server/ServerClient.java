@@ -15,6 +15,7 @@ public class ServerClient implements Runnable {
     private ObjectOutputStream outO;
     private String name;
     private int playerNumber;
+    private Thread receivingThread;
 
     public ServerClient(Socket socket, Session session, int playerNumber){
         this.socket = socket;
@@ -40,10 +41,20 @@ public class ServerClient implements Runnable {
         }
     }
 
+    public void closeConnection(){
+        try {
+            this.receivingThread.stop();
+            this.socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     @Override
     public void run() {
         try {
+
+
             this.in = new DataInputStream(this.socket.getInputStream());
             this.out = new DataOutputStream(this.socket.getOutputStream());
 
@@ -57,19 +68,27 @@ public class ServerClient implements Runnable {
             this.name = in.readUTF();
             System.out.println("#### " + this.name + " joined the server!");
 
-            new Thread(()->{
+            this.receivingThread = new Thread(()->{
                 while (true) {
-                    try {
+                    if (socket.isConnected()) {
+                        try {
 
-                        Object object = this.inO.readObject();
+                            Object object = this.inO.readObject();
 
-                        this.session.objectReceived(object, this);
+                            this.session.objectReceived(object, this);
 
-                    } catch (IOException | ClassNotFoundException e) {
-                        e.printStackTrace();
+
+                        } catch(IOException | ClassNotFoundException e){
+                            e.printStackTrace();
+                            break;
+                        }
+                    }else {
+                        break;
                     }
                 }
-            }).start();
+            });
+
+            this.receivingThread.start();
 
         } catch (IOException e) {
             e.printStackTrace();
