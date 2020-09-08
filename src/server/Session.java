@@ -50,24 +50,10 @@ public class Session implements Runnable {
 
     private void updateAllClientGames(){
 
-        Opponent player1Opponent = new Opponent(
-                this.player2Game.getMyPlayer().getHandSize(),
-                this.player2Game.getMyPlayer().getDeckSize(),
-                this.player2Game.getMyPlayer().getBoard().getMinions(),
-                this.player2Game.getMyPlayer().getHealth(),
-                this.player2Game.getMyPlayer().getMana(),
-                this.player2Game.getMyPlayer().getPlayerColor(),
-                this.player2Game.getMyPlayer().getTotalMana());
+        Opponent player1Opponent = createOpponent(this.player2Game);
         this.player1Game.setOpponent(player1Opponent);
 
-        Opponent player2Opponent = new Opponent(
-                this.player1Game.getMyPlayer().getHandSize(),
-                this.player1Game.getMyPlayer().getDeckSize(),
-                this.player1Game.getMyPlayer().getBoard().getMinions(),
-                this.player1Game.getMyPlayer().getHealth(),
-                this.player1Game.getMyPlayer().getMana(),
-                this.player1Game.getMyPlayer().getPlayerColor(),
-                this.player1Game.getMyPlayer().getTotalMana());
+        Opponent player2Opponent = createOpponent(this.player1Game);
         this.player2Game.setOpponent(player2Opponent);
 
         this.player1.writeObject(this.player1Game);
@@ -95,6 +81,7 @@ public class Session implements Runnable {
             cardsPlayer1.add(new Minion(i,i,i,"DummyPlayer1", "", false));
             cardsPlayer1.add(new Minion(i, i, i, "SecondDummy", "", false));
         }
+
         Deck deckPlayer1 = new Deck(cardsPlayer1);
         Collections.shuffle(deckPlayer1.getCards());
 
@@ -137,7 +124,6 @@ public class Session implements Runnable {
                 firstPlayerView.getTotalMana());
 
         this.player2Game = new Game(secondPlayerView, secondPlayersOpponent);
-
 
 
         //=================sending games to clients and starting game============================
@@ -330,9 +316,20 @@ public class Session implements Runnable {
         if (playerNumber == 1){
             this.player1.closeConnection();
         }else if(playerNumber == 2){
-
+            this.player2.closeConnection();
         }else {
             System.out.println("Error: Unknown player number");
         }
+    }
+
+    private Opponent createOpponent(Game game){
+        return new Opponent(
+                game.getMyPlayer().getHandSize(),
+                game.getMyPlayer().getDeckSize(),
+                game.getMyPlayer().getBoard().getMinions(),
+                game.getMyPlayer().getHealth(),
+                game.getMyPlayer().getMana(),
+                game.getMyPlayer().getPlayerColor(),
+                game.getMyPlayer().getTotalMana());
     }
 }

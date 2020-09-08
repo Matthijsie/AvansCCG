@@ -1,10 +1,10 @@
 package client;
 
+import Shared.MessageObject;
 import client.actionObjects.*;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -16,7 +16,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 import org.jfree.fx.FXGraphics2D;
 import org.jfree.fx.ResizableCanvas;
 import server.game.Game;
@@ -28,7 +27,7 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
-public class ClientApplication extends Application {
+public class ClientApplication extends Application implements ServerResponseCallback {
 
     private ResizableCanvas canvas;
     private Client client;
@@ -89,9 +88,9 @@ public class ClientApplication extends Application {
         }.start();
 
         //============action events================
-        this.canvas.setOnMousePressed(e -> onMousePressed(e));
-        this.canvas.setOnMouseDragged(e -> onMouseDragged(e));
-        this.canvas.setOnMouseReleased(e -> onMouseReleased(e));
+        this.canvas.setOnMousePressed(this::onMousePressed);
+        this.canvas.setOnMouseDragged(this::onMouseDragged);
+        this.canvas.setOnMouseReleased(this::onMouseReleased);
 
         //send message if enter is pressed
         this.chatInput.setOnKeyPressed(e -> {
@@ -117,8 +116,10 @@ public class ClientApplication extends Application {
 
         stage.setOnCloseRequest(event -> {
             Platform.exit();
-            client.writeObject(new CloseConnection());
-            client.closeSocket();
+            if (this.client != null) {
+                client.writeObject(new CloseConnection());
+                client.closeSocket();
+            }
         });
 
         stage.show();
@@ -132,7 +133,7 @@ public class ClientApplication extends Application {
         g2d.fill(screen);
 
         if (this.game != null){
-            drawEndRunButton(g2d);
+            drawEndTurnButton(g2d);
             drawPlayerPortraits(g2d);
             drawDecks(g2d);
             drawHands(g2d);
@@ -145,7 +146,6 @@ public class ClientApplication extends Application {
 
     }
 
-    //todo add function to select minions and attack targets
     private boolean onMousePressed(MouseEvent e){
         Point2D mousePosition = new Point2D.Double(e.getX(), e.getY());
 
@@ -451,7 +451,7 @@ public class ClientApplication extends Application {
         }
     }
 
-    private void drawEndRunButton(FXGraphics2D g2d){
+    private void drawEndTurnButton(FXGraphics2D g2d){
         this.endTurnButton = new Rectangle2D.Double(canvas.getWidth()*0.90, canvas.getHeight()*0.47, canvas.getWidth()*0.10, canvas.getHeight()*0.06);
 
         if (this.game.getMyPlayer().isMyTurn()){
@@ -467,5 +467,15 @@ public class ClientApplication extends Application {
                 "End turn",
                 (int)(this.endTurnButton.getX()+this.endTurnButton.getWidth()*0.2),
                 (int)(this.endTurnButton.getY() + this.endTurnButton.getHeight()*0.6));
+    }
+
+    @Override
+    public void OnServerResponse(MessageObject messageObject) {
+
+    }
+
+    @Override
+    public void OnServerError(MessageObject messageObject) {
+
     }
 }

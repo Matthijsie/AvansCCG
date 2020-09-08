@@ -19,7 +19,7 @@ public class Client {
     private ObjectInputStream inO;
     private ObjectOutputStream outO;
     private ClientApplication gui;
-    private Thread inputThread;
+    private transient boolean isRunning;
 
     public Client(String host, int port, ClientApplication gui){
         this.host = host;
@@ -47,8 +47,10 @@ public class Client {
             this.out.writeUTF(this.name);
 
             //Handling incoming game Objects
-            this.inputThread = new Thread( () -> {
-                while ( true ) {
+            new Thread(() -> {
+                this.isRunning = true;
+
+                while (isRunning) {
                     try {
                         if (socket.isConnected()) {
                             Object object = this.inO.readObject();
@@ -64,18 +66,16 @@ public class Client {
                                 System.out.println("Error: unknown object received");
                             }
 
-                        }else {
+                        } else {
                             break;
                         }
 
-                        } catch(IOException | ClassNotFoundException e){
-                            e.printStackTrace();
-                            break;
-                        }
+                    } catch (IOException | ClassNotFoundException e) {
+                        e.printStackTrace();
+                        break;
+                    }
                 }
-            });
-
-            this.inputThread.start();
+            }).start();
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -101,11 +101,16 @@ public class Client {
 
     public void closeSocket(){
         try {
-            this.inputThread.stop();
+            //this.inputThread.stop();
+            this.isRunning = false;
             this.socket.close();
 
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public boolean isConnected(){
+        return this.socket.isConnected();
     }
 }

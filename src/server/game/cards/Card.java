@@ -12,7 +12,7 @@ public abstract class Card implements Serializable {
     protected int cost;
     protected String cardName;
     protected String cardText;
-    protected transient Point2D position;
+    protected Point2D position;
 
     public Card(int cost, String cardName, String cardText){
         this.cost = cost;
